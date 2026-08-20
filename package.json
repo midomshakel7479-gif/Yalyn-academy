@@ -5,5 +5,8 @@
   "description": "Yalyn Academy — AI-powered attendance, exams and grading platform.",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "pdf-parse": "^1.1.1"
   }
 }
