@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yalyn Academy</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050817; --panel:#0e1535; --panel2:#0a0f28; --line:#ffffff17;
+    --text:#f2f4ff; --muted:#98a2c0;
+    --violet:#8b5cf6; --violet2:#7c3aed; --cyan:#22d3ee; --gold:#fbbf24; --green:#34d399; --red:#f16a5c;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 0%,#32116e 0,transparent 30%),
+      radial-gradient(circle at 95% 15%,#003e5d 0,transparent 27%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Cairo',sans-serif;
+    min-height:100vh;
+    position:relative;
+  }
+  body:before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(#fff 1px,transparent 1px);background-size:70px 70px;opacity:.05;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+  ::selection{background:var(--violet);color:#fff;}
+
+  /* Top bar */
+  .topbar{
+    background:#040716dd;backdrop-filter:blur(18px);
+    color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;
+    position:sticky;top:0;z-index:20;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:.2px;cursor:pointer;}
+  .brand .mark{
+    width:36px;height:36px;border-radius:11px;
+    background:linear-gradient(135deg,#ffcf48,#8b5cf6 55%,#22d3ee);
+    display:flex;align-items:center;justify-content:center;color:#0a0f28;font-weight:900;font-size:16px;
+    box-shadow:0 0 22px #8b5cf666;
+  }
+  .topbar-right{display:flex;align-items:center;gap:10px;}
+  .pill{
+    background:#ffffff10;border:1px solid #ffffff30;color:#fff;
+    padding:7px 14px;border-radius:99px;font-size:13px;font-weight:600;
+  }
+  .pill:hover{background:#ffffff1c;}
+  .langbtn{background:transparent;border:1px solid #ffffff40;color:#fff;padding:6px 12px;border-radius:99px;font-size:13px;font-weight:700;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 60px;position:relative;z-index:1;}
+
+  /* Hero / home */
+  .hero{text-align:center;padding:56px 18px 30px;}
+  .hero h1{font-size:40px;margin:0 0 8px;font-weight:800;
+    background:linear-gradient(90deg,#fff,#c4b5fd 60%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{color:var(--muted);font-size:16px;margin:0 0 34px;}
+  .role-cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+  .role-card{
+    background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 34px;width:230px;text-align:center;
+    box-shadow:0 20px 50px #00000066;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .role-card:hover{transform:translateY(-4px);box-shadow:0 26px 60px #0008;}
+  .role-card .icon{font-size:34px;margin-bottom:10px;filter:drop-shadow(0 0 10px #8b5cf688);}
+  .role-card h3{margin:6px 0 4px;color:#fff;font-size:19px;}
+  .role-card p{color:var(--muted);font-size:13px;margin:0 0 16px;}
+  .btn{
+    display:inline-block;background:linear-gradient(135deg,var(--violet2),var(--cyan));color:#fff;border:none;
+    padding:10px 20px;border-radius:11px;font-weight:700;font-size:14px;
+    box-shadow:0 10px 26px #6d28d955;transition:.15s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px #6d28d977;}
+  .btn.gold{background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1200;box-shadow:0 10px 26px #f59e0b44;}
+  .btn.gold:hover{box-shadow:0 14px 32px #f59e0b66;}
+  .btn.outline{background:transparent;color:#fff;border:1.5px solid #ffffff45;box-shadow:none;}
+  .btn.outline:hover{background:#ffffff12;}
+  .btn.danger{background:linear-gradient(135deg,var(--red),#b8503f);color:#fff;box-shadow:0 10px 22px #b8503f44;}
+  .btn.small{padding:6px 12px;font-size:12.5px;border-radius:8px;}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;}
+  .link-btn{background:none;border:none;color:var(--cyan);text-decoration:underline;font-size:13px;padding:4px;}
+
+  .demo-link{margin-top:22px;}
+
+  /* Login card */
+  .center-card{
+    max-width:400px;margin:60px auto;background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);
+    border-radius:var(--radius);padding:32px 28px;box-shadow:0 20px 50px #0007;
+  }
+  .center-card h2{margin-top:0;color:#fff;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;
+    font-size:15px;background:#080c22;color:var(--text);
+  }
+  .field textarea{min-height:110px;resize:vertical;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--violet);border-color:var(--violet);}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;}
+  .err{color:#ff9c8c;font-size:13px;margin-top:8px;font-weight:600;}
+
+  /* Dashboard layout */
+  .dash{display:flex;gap:20px;align-items:flex-start;}
+  .ledger-rail{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:12px;
+    display:flex;flex-direction:column;gap:4px;min-width:215px;
+    box-shadow:0 16px 40px #0006;
+  }
+  .profile-mini{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:10px;border:1px solid var(--line);border-radius:14px;background:#ffffff08;}
+  .profile-mini img{width:42px;height:42px;border-radius:50%;box-shadow:0 0 16px #8b5cf655;flex:none;}
+  .profile-mini .avatar-fallback{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:none;}
+  .profile-mini b{display:block;font-size:13.5px;color:#fff;}
+  .profile-mini span{font-size:11px;color:var(--green);}
+  .ledger-rail .rail-title{color:var(--muted);font-size:11px;font-weight:700;padding:8px 10px 4px;letter-spacing:.5px;opacity:.85;text-transform:uppercase;}
+  .rail-tab{
+    display:flex;align-items:center;gap:10px;
+    background:transparent;border:none;color:var(--muted);
+    padding:10px 12px;border-radius:11px;font-size:14px;font-weight:600;text-align:start;
+  }
+  .rail-tab .n{
+    font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);
+    width:24px;height:24px;border:1px solid #ffffff2a;border-radius:7px;
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .rail-tab:hover{background:#ffffff0c;color:#fff;}
+  .rail-tab.active{background:linear-gradient(135deg,var(--violet2),var(--cyan));color:#fff;box-shadow:0 8px 22px #7c3aed55;}
+  .rail-tab.active .n{border-color:#ffffff70;color:#fff;}
+
+  .dash-main{flex:1;min-width:0;}
+
+  /* Hero banner inside dashboard */
+  .hero-banner{
+    position:relative;overflow:hidden;border-radius:22px;border:1px solid #a78bfa33;
+    background:linear-gradient(120deg,#0a0c2bee,#111149d9 55%,#071c31aa);
+    padding:28px 30px;margin-bottom:18px;box-shadow:0 20px 55px #0007;
+  }
+  .hero-banner:after{
+    content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:var(--violet);
+    opacity:.32;filter:blur(60px);inset-inline-end:-70px;top:-70px;animation:float 6s ease-in-out infinite;
+  }
+  .hero-banner .eyebrow{font-size:11px;color:#c4b5fd;text-transform:uppercase;letter-spacing:2px;position:relative;z-index:1;}
+  .hero-banner h1{font-size:27px;margin:8px 0;position:relative;z-index:1;color:#fff;}
+  .hero-banner h1 span{color:#c084fc;}
+  .hero-banner p{color:#b7bfd4;max-width:580px;position:relative;z-index:1;line-height:1.7;}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;position:relative;z-index:1;}
+  @keyframes float{50%{transform:translateY(-8px);}}
+
+  /* KPI cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .kpi{background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:17px;padding:17px;position:relative;overflow:hidden;box-shadow:0 16px 40px #0006;}
+  .kpi:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;filter:blur(24px);opacity:.5;inset-inline-end:-30px;bottom:-30px;}
+  .kpi.violet:after{background:var(--violet);} .kpi.cyan:after{background:var(--cyan);}
+  .kpi.gold:after{background:var(--gold);} .kpi.green:after{background:var(--green);}
+  .kpi .label{color:var(--muted);font-size:12px;position:relative;z-index:1;}
+  .kpi .value{font-family:'JetBrains Mono',monospace;font-size:27px;font-weight:700;margin-top:6px;position:relative;z-index:1;color:#fff;}
+  @media (max-width:760px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+
+  .lower-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;}
+  @media (max-width:900px){.lower-grid{grid-template-columns:1fr;}}
+
+  .card{
+    background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;margin-bottom:18px;box-shadow:0 16px 40px #0006;
+  }
+  .card h3{margin:0 0 14px;color:#fff;font-size:17px;}
+  .card .muted-sub{color:var(--muted);font-size:11.5px;margin-top:-10px;margin-bottom:12px;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;}
+  .row .field{flex:1;min-width:160px;margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{padding:9px 10px;text-align:start;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+
+  .chip{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;}
+  .chip.green{background:#34d39922;color:#5ee9ad;}
+  .chip.red{background:#f16a5c22;color:#ff9c8c;}
+  .chip.gold{background:#fbbf2422;color:#ffd873;}
+
+  .list-item{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:12px 4px;border-bottom:1px solid var(--line);
+  }
+  .list-item:last-child{border-bottom:none;}
+  .list-item .meta{color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .empty{color:var(--muted);font-size:14px;padding:16px 4px;text-align:center;}
+
+  .qcard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#0a0f28;}
+  .qcard .qtype{font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;}
+  .qcard .opts{margin:8px 0 0;padding:0;list-style:none;}
+  .qcard .opts li{padding:5px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:#0e1535;font-size:13.5px;}
+  .qcard label.opt{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;margin-bottom:6px;background:#0e1535;font-size:14px;}
+  .qcard label.opt:hover{border-color:var(--violet);}
+  .check-row{display:flex;align-items:center;gap:8px;padding:6px 4px;}
+
+  /* Stamp badge for scores */
+  .stamp-wrap{display:flex;justify-content:center;padding:14px 0 6px;}
+  .stamp{
+    width:130px;height:130px;border-radius:50%;background:var(--panel2);
+    border:4px double var(--green);color:var(--green);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transform:rotate(-8deg);font-family:'JetBrains Mono',monospace;box-shadow:0 0 30px #34d39944;
+  }
+  .stamp.fail{border-color:var(--red);color:#ff9c8c;box-shadow:0 0 30px #f16a5c44;}
+  .stamp .big{font-size:30px;font-weight:700;}
+  .stamp .small{font-size:11px;font-weight:600;letter-spacing:.5px;}
+
+  /* Ring + bar charts */
+  .ring-wrap{position:relative;width:150px;height:150px;margin:8px auto 4px;}
+  .ring{width:150px;height:150px;border-radius:50%;box-shadow:0 0 35px #22d3ee22;}
+  .ring-center{position:absolute;inset:13px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+  .ring-center b{font-size:21px;font-family:'JetBrains Mono',monospace;color:#fff;}
+  .ring-center span{font-size:9.5px;color:var(--muted);margin-top:2px;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin-top:10px;font-size:11.5px;color:var(--muted);}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:5px;vertical-align:middle;}
+
+  .barchart-wrap{overflow-x:auto;padding-bottom:6px;}
+  .barchart{display:flex;align-items:end;gap:9px;height:170px;padding:14px 4px 26px;min-width:max-content;}
+  .barchart .bar{width:26px;min-height:4px;border-radius:8px 8px 3px 3px;background:linear-gradient(to top,var(--violet2),var(--cyan));box-shadow:0 0 16px #7c3aed44;position:relative;}
+  .barchart .bar .lbl{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap;}
+  .barchart .bar .val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:#fff;font-family:'JetBrains Mono',monospace;}
+
+  .msg{max-width:75%;padding:10px 14px;border-radius:14px;margin-bottom:10px;font-size:14px;line-height:1.5;}
+  .msg.mine{background:linear-gradient(135deg,var(--violet2),var(--cyan));color:#fff;margin-inline-start:auto;border-end-end-radius:3px;}
+  .msg.theirs{background:#0e1535;color:var(--text);border:1px solid var(--line);border-end-start-radius:3px;}
+  .msg .when{font-size:10.5px;opacity:.65;margin-top:4px;}
+
+  .exam-q{background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;}
+  .exam-q .qn{font-weight:700;color:#fff;margin-bottom:10px;}
+
+  .spinner{
+    display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-inline-end:6px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .tag-btn{background:#0e1535;border:1.5px solid var(--line);padding:8px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);}
+  .tag-btn.active{background:linear-gradient(135deg,var(--violet2),var(--cyan));color:#fff;border-color:transparent;}
+
+  .ai-card{margin-top:0;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:15px;background:linear-gradient(135deg,#25104f,#092d3f);overflow:hidden;border:1px solid var(--line);}
+  .ai-card .robot{font-size:42px;filter:drop-shadow(0 0 16px #22d3ee);animation:float 3s ease-in-out infinite;flex:none;}
+
+  @media (max-width:760px){
+    .dash{flex-direction:column;}
+    .ledger-rail{flex-direction:row;flex-wrap:wrap;min-width:0;width:100%;}
+    .profile-mini{display:none;}
+    .rail-tab{flex:1;justify-content:center;}
+    .hero-banner h1{font-size:22px;}
+  }
+  a{color:var(--cyan);}
+  :focus-visible{outline:2px solid var(--violet);outline-offset:2px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================ DATA / I18N ============================ */
+const GRADES = [
+  {id:'g1',  ar:'الأول الابتدائي',   en:'Grade 1 · Elementary'},
+  {id:'g2',  ar:'الثاني الابتدائي',   en:'Grade 2 · Elementary'},
+  {id:'g3',  ar:'الثالث الابتدائي',   en:'Grade 3 · Elementary'},
+  {id:'g4',  ar:'الرابع الابتدائي',   en:'Grade 4 · Elementary'},
+  {id:'g5',  ar:'الخامس الابتدائي',   en:'Grade 5 · Elementary'},
+  {id:'g6',  ar:'السادس الابتدائي',   en:'Grade 6 · Elementary'},
+  {id:'g7',  ar:'الأول الإعدادي',     en:'Grade 7 · Prep'},
+  {id:'g8',  ar:'الثاني الإعدادي',     en:'Grade 8 · Prep'},
+  {id:'g9',  ar:'الثالث الإعدادي',     en:'Grade 9 · Prep'},
+  {id:'g10', ar:'الأول الثانوي',       en:'Grade 10 · Secondary'},
+  {id:'g11', ar:'الثاني الثانوي',       en:'Grade 11 · Secondary'},
+  {id:'g12', ar:'الثالث الثانوي',       en:'Grade 12 · Secondary'},
+];
+const TEACHER_PASS = 'teacher123';
+const AVATAR_B64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFUAAABQCAYAAABoODnpAAAv00lEQVR4nG29aaxl2XUe9q219zl3fPOr4dVc1TX03GRTZDeHlthkN5uiJSuRFYmWZNqWiEAwEMeGHUFBBORH4vxIAMFAHMlGBBtRPESBEYU0bZGiODWbQ4fVzaruanYNzZrrVb2qV/Wm++5wztlr5cceznnVKuDi3XvuOeeevfa3v/WttdfeRZ968benmQAiii9iBgwLmJWIACYCE4OZwAQwA0yqHL+DP0YEEAAiEAPwH5UAAFAQ4kGFvy/8D0CV1J/FTAL/HEJESkwgkBIxCASK1xD8jeBvSuTvQEThnqT+Fc9oPEA8Et4rAFW8/306pul9PAcKqCrS4dBMIpAl/3P+gf1BJQWRMqAajhEI7B+TCKQaG+iPcf2IFIyWnh2kgBKFFhFUKX6CEhTqr1IFUXqS2MHeoFTfmyia0ZuJyDdHwzX+vaYnokaTNdqRwk+nOyUjpsduGJAa71OLGl2j2riLQi1im0J74sPH5yFq3D49Wex136h097qH/HOretCFj8nmvrdCGzRAF0r+DkoMTSBLF5KmnvfPrrFfAVKiiCkCoOSRq75hlNpeG5HrpqhSo20N9AbTaTwc3sSGAOTb2DgXClhF/FnSBM3GT+40aPpH6Ra041tNQIIHGkXTUDAmYt/tuGdovB/uqUtTh1E9jlVR3za1n7xpqGEYDZf55mrjEq0vS0feN9QfgmyNnNB+rQ81ryUiWCgBHE9oAKHx6ESxf2tUR1oIJtJg3wiTBMk0AMNY9V28Ezz+KBkCuXg6gWvwp2eoG9Z8tp1tfqj3k6GjGQOAa0J+yHD1BwrDCWHgaLpXjamIh2AxQAl2R88GhASIhVFH6ecTt9WNIe84lJIh4+X+ZhzaHDuJCJBwHYdGK6BKfvgbIgiBJPAngeLvBrakhj09gCk+SE0DFLmXlDyCNfSff9jacPUwb6Ic6alj1zQJpNlJqrVt4re20eYwTHZ2YvyJhmdP79kjNjiTerwTEbhGJHmvBwDKBBgAYO9gGCBlUhCRhOO+uwniccJKIA0OKz57pClvbIJSTXX1kEEDbYFxoJS81vsaqU0DR0inL2uI7jBw0+ieqWx9pPF1RDX5HmaOXjggs9ExfpgSE2qHFQHNgUGImaAEVccQNYDmTiomgiUAQgJmrphsoUwTJuMMszIziQpUA5KTBAMjugiq/X5CbpRX0ScSxdGMABltcmxDmCX0okH98ASaxrxqbbOgW1LHqYJsHM/qUQLvLCKhaj3kkxePTdAw9NHQuN6mQbcqKWVE1K1EZlQx1W73Zqam+53Z2enZ+YV+LzPoGSJWEi0n1WRjfXt7azC8N9ga3SnHo9tFMVnPW3bcauWqoqhcSUTcBFjUpLH5id9rkuCkCUJDVWua3Yk2r5/VU2jsEo0u9X1XNLpkBzADUiMnpR9Io4caHRIpDiBiYmU/WoPHJiIQW2YoNC9Fl4Dsqan+9GMHDuw/cuqJY/PzC3MLc4uzZnB7ub21cceONtazvMWwto09+/fr7PzewnR6gwcbg7V7N+9cu3X12vlr7106c3/13uVWu7Wa5a1KxLGIgIg1Mmfk0UZbakdCRLVdArGod66qOy2lzRZDVTVJ0kiitOM2QdKjvsKD7lMv/vasYf94hgFmIibAMJTZR1f+M4GZyJCPrqwh/723KFvLUOasFF1sd2Y/cujYsReefPrxJ46fOjhVjIquq7Zx+Z23Opd+chbXLr1r7t6+RuOtEfX6LSrLCv2ZGZ2d2UPPPP+8PvvCyzI7t1iMx8NxMR7funNr+fy5N8+8dnv5+pks46uZsaV6cek4cHEDNRJw5eWeRnXiuVVrh6EiDTlUuzwfKQXKbcqreH00YI3wmoQBIvr0i1+cZQYxkzIjGJSICWqYiA3BUAhHmciQ5zpjCMbj1GStPCtE+525xad+5rkPfvzUyRMf27tvZr4aF/2712/QGz/8AV84c9rcvXNDy8k2jwbbtt1n3VofmU43R5YzXKm6sTFEu9/VXQtH9Je/8Jvy5Id/hjY2t0WVJ9MzM8v3b9987+yP3vzW9StXXsstXycmqGoVnKIEQyqSrRoxUgCVqpcfflx7A4o26CJ8D0UybOyt+Ddwqjb1bW1cAr30qS/OEZNHokcoDIOCEcHGj3ETPLphBhtmy0SG2XLWysbKR59+9umf/fRnPvHRqRb2rd2+M9+dalsmzb/0r/+UT3/vuyYzJcajIXX6lgabIxqMRrS+NcTYCYqypIwZnXYL7Xam462K9u3eJ8//7Av6K//l33XjiszKjXtVlueb84uL92789OrFt944/X8PNtZ+2G5nQ+cqAeDIo1QhHpgg0kigon48hy8AUBj+0TCU9EBwPAmM+rBhG6SsiGFHw9m/9KkvzvlhTPCJFIAZZLyhySdRglGZ4FHKnBs2YrJpZ7vPvvILL332I88/fmLz9vXdD5ZX20v759ub66vmzOnX6dybp2n50g3K2orxpGRkhI31LRRFSWtbI7r5YABlQmZJXSnUzi0tzkzLkV2L1G/nmN67oJ/+xf9cf+6lX3KXLv0UW1uD7dnZhW2T27tn3zjzF1d+cv7/6nTsHYU4qJQEElKJvgZQH/yoQqX20AFkUZ/Fsav1e6VGJ0TYeo8SjZo0btKi/v4WCIFhDeAgqmtFWut5IiYyhk1Wql1Ad+7Fv/mbv/TZYwfm9t27/G6vHBf9PfumbSer6A/+2R/Tt179Hp98ZAG9NtPKxgBXbj2gUVlhup3RkUMz2K5KiAgq8fJlVFbkoLpx5x63WlYf27WXLl+6hG/8w/+GfufvXaDf/gf/GMu370+t3rnfpdJMP//ii0vzuw8ef/1b3/hXU13zYyaCqpQgEkrt1eTImGq0gQgqdbtrhqSEwaQIwvmInNr0g/H8hna1UQsEvRRgTIaIw2HyxEAgYlgmak8k39dZ2PPZv/PFX/7UQq/YdfvimU5m8qyVWTs7ldMPvvE1/u73XqXxuKKV2+uYncnpzMXr2K4cjLFUVBWyO8D2YAJjTEwbciuzABOJI1y9/YCWVx4gMxasRP/zH/wRpqfb+su/8Vsk5RRPxoVZuXwxf/rZJ1/p9zsnvvkfvvK/TfXMf2LAqUhIBPj4vxkV1GKz1phNOdQMACiiMnGuokGi4T4704KkADfiSmJmDlRA0dkzkSVGiwg9A8w7tSfR3fv53/riL/3CjHmwf/nCO712nrWytsnyNvHtm1f5O9/6JrczR7M9om4v49XBkEoFGWPYGsaorLC8OqQHgwmpOqrKkoqihDgHrSoYCCoIhqViazKhVtei123hf/on/5R+/OrXqZtX3GqrnZvJW7cunGkfObL06It/7XP//bDQXyE2lhhETF52UYPtYuujpm8YJqK0qcwSF1BUDg/923GAEKnCIho23JJCIBRsmwGUE3EHKlNK5uCE5j/7t77w1z82nQ2mbr93OZ+dmzLFpOBqOKa53X0++8abdPHtCzTVyWjLVTQYTnDh2m04EfQNo58RIQdaGcBikWWGRBystYBz6PfaECe4tT7AWiXI2y1sbU/Qa+VY3pjg61/9D/T3HjuJclBplrcxN9OxqzcuuUdOnNg1Hn/0H73x6mt3em3756KOlUhCSFWH4nWsRRojz6BGo6EjHWgt6t9v0ojQKINjBwCwKfVRh3IxKDIEZETUhcpCy/C+zbL10mf+xsufOL7PdO/89HI2PdU3VVURkZDNQPdXV3Hm/LsoM4MKhO3C4cbyTTy2q4/f+42XcGzPDLU7FpYM2CgUDKcOlXNQEZSjCkQViqLA2QvL+JdffRuXNsfgvIUKwNLsFH70xjksX7uK+aUjmJQlMRv0u9auL19xTz/zxL6N1Qf/1ZXz75zttLJblTiAYlYwDP1k2Mh5CCF+jDcbwIt4fBii6TQPeVLacZJt3DV2i8+HgAyIcoXOWKK9gwn/zNEPfPRDn/rkic71s9/Ke522ZVYjlUC0ona7RW+9eYm+9hevkxYDKsqK7m9sY6Fl6Y9+72/jgy89AxqPw4MQSMU7iqqCuhIyLuDGI5TjESbbAxzYNYOF6T7+yb95FRcHI0wqh4wZN8/fwvdf+yF+5W8dp0k59mRMityI2Vi55j7+4gsfWr179z8bbz34X5nISAxf0Qyz/GPEcCnmOKKdJV2BFPc3B3ttQE39oA2khukpopoBPGwVZAC0WDEtQkfyqX3PfP7zL0zdu3zadFpty8QEFRgDZBmo17W4evUari7fRqGCsqxQlhX97m98Vp/6uWch94eQMcMVLbiqjcp1IehBTB9Ou3DoQLkDcAciLUhJeOaxI/jF5x6FCV60BFCp4t3LV8FwIIh/EZBZA6qGVG3fN5/49Cd/TSk/ZNk4RkoRAjFBRfWrTirWQIxf/1X/9H2fovOqv2GFRhUc7xPm7GAB7Voyu7YKe+pnX/7Enh7d60y2hjbPLRETiacrFlEwGyqdo9JVGE8KbG5t46WTh/CFz/886bCAcBtiuoBpAZyDTAaQBWDBWQZjM4AMMRu0WjlZkxE7oY89e5wOT3VoWBZUOkEF4Nate5iMJwAJVBz5Ea6U5xkN1+9g966p40cefeKVUQVhY72NUkYlGi4lNUg1Jr9qNaAp9VSLpdpstEMIRE6NSoDDCRTiszBbpAwok2jHOT44tevwsc++fKq7euOi6XTbLOLVrbGG2LAyM1rdNnbvn0erZWANMJsTfutvvIx8bhaVMsqsi4oslAhMAiYFkxBTyOgxETNDVUhUoWwgSjiwZwHPHNsLhs81KADnFMocZGAYgOFvq2VpfeVW9oGPfOCzLu/vDbOwtVpHLTNjPqCJwJide/j7ZmJ7R/za6KDYAxziOFIfEHPoASPiWobM/PpQHnnuuScXq82rbS2VmcE++6YhwjIwzCSFYL4zB1LCaFjQyV0z+PiHnwFKhVILyjlAWUSBjx+Dq9VKAeczPEwMEUUFH4PnNsOpQ0tgKHGYYpmengazAVT99IEIAQIoyBATyiFydo8defypD44mIoYshyRlCAUoeP7aYg/L1aSogm7wehUx2kpMvUOjhs82hVs+C60CJYIQgKxS3pv3Fw5/8pMnu3dvnuZWp+0piZEy/ESAZaNEQkeO7sbUdAfF1lA/8tRJmj+2D7CAybpA3vM/qxWwPYSOhtAqTElZBpGFIQY4Q5s7MB0DsgZwwJPH9+ieXhubwsiZ8eRjx9HuWIwnosQGISMCIs9HectguHF36qlnn3jhxrlz3yEMKw6eSeJI3el7mn4rTSNAEeYgHjoRD8X/D8UEVhtBq0cQWBSUse1ujnXfB557aqGF9XyjcNzqhC7SKMSiYjAYDyfYN7+AfruNuxtDOnZoN7iV4c57l3H2zTextTWG5QwHju7D8VOnMLV7FtieQIsJOLdwgwpXLlzDuZ9ew8bmBP1ujkcO7sGhpTkcXlqgpV5H19eH6BiDJ04dhTjns7rEqly3ShVkmGi0vZFN7bUfXDzwyN77l8/cyCyzU/ewFE1YDPNYFCRYGOn1zKpKPX0aElxQaRi0EYnZ2v6N/JcqQ7k9kdbiRz72eHe4doONtbWoU1VSToZlY0AMLCzM46nHTuJb917X6Zkeubu38W//+b/G+dv3MT3Tw3BrjAfbAxxYmMbv/6PfwvT+/SBWFGub+PqXv44///453Bk6lGOgEsWJpWn8zm9+Evt2L+DY3nlcWNvC0uw0Hjl5DGCAjUmMpo0IHABZ49iNNnYvHT546s6lt29mVgmeVVCfWLNhqhhowK6hoWr7x5EdnNJOlPq7pcw/1BNW6DQjgj5xa2FpV6tVrI9CujpN9FF6HzRZVTiAcvwXv/rX8ep3f4Ss1QGswS/+6ufw6/sXsXJtBXdvLOPK7WXcu3EPk60NYDIPKcc4/6PTuHV9BccP78eHD+7Fkf1LmOq18d7bF7G6vIa5/rwuzkxTpaqPHj6K2fklTCYVmH0FSEyMINThKIHYEsrt9alOt3dcNPs2UFQP6U1CyNVrRF80Khrz+tCk71X98WRMNGQBpeoQWGgIB2KuwStWFmh3bmF+ppuVZlRVIGP9t+FxggbRNC+VGYzKCi//4i/gk//7v0BvugOemUK7m+ErX/0mvvSVM+h1GAf3TuOTTx3F3K55EFuM1zdw7959fPDJozh7/S6+/sOfoJVfxPNPP4IPH98H4xzYZjS1MK27utN45YVnMdVlbJYWSgJK7BWhR6qqxMw0GQ/yXmfmUN7tdiHFZjorpfUjUBuMWGdZdkI0XLvDzwcr7gjQFOBg7TibRoASMfO4qPpHjh/sUTVgcY44zSzGGd6GK1RVm1mUk20Ug3t4+blHMd/yIfXwwRqunb+Nft5Gt5Pj+rW7KMZjL7CZMJmUABhLSwuAAc7dXMf5lW38+2+/hbtra+hkOSwxMjY4PjuF49k2bnzlTzCdCYhjeKgpyxYQp0REUlWm32svdXrT8xLK3oKHSSbT6N3jZ+9X0gmN40m1aNSk6debnxU2DBeEG/u2MpuiqLpHH1lqZVz5VAARduTN4OM5AkNBsNZge3sT57/6Og7lBvOmAqjCgSP78Gt/7WO4e28Nqw/WMFjbxMG9iyBDgCVkmUXLELq9HD/34Udx7e4YaLXw1NEDePLUEbQKh04nQ89meGJpAdmDu6hWx2gXI2Xt+KmPuk6hhpwSmIVauZmZXZibW1m7ft1LpxgFBHTEJOFD2nMHGhtDIeAqGXQH3wbu9Fkq/y/9JYJxlfTmZ/s56Rjk5WDo4ka5HACIKJS4HI2Rs+JDH3gcG8Pb0LVNaAG0u9N44rkFPJkZVKubUC1QDcaQsYOMHVqtLiwsyvUxjh5bwj/8jZcwKRQz831YMti8tQVMCN0CeHTvLE48uoThoESxPSb0phVaghBUVW3ZoOGVoK43NdOfW3aOTcYCAZSUVWuhlCJK1SZfkqZg82HHpDviB0iAWyAWW9chBHb0pzExt9q9DhONwJY9JMMjhKlhDRUSvj8rIdYS8wf3oP/kCWxeugLYXNFmKocljGVQ3gO1+8jKTQigmlmyu+Z0ZnefnHPqBhV12y1kAFARKgI6u/qoRLB7Vw88JIBztKZylAqA2E88hdZK0vMxBFUwU5a3Wl0omIgkoDLFHkmPIo1WbZQBhbN3evnQ4nRiclghOmX1vobhB7jxOV01IM7YGBZxsUjCE27yoBqGjATBVoGEdbg2hJ3djfbUvOp2CZg2XGkgpYFMDHQAKDIlzlANnCKforzb1/Fgi6SoUA0rgAzEGUy2FZxlWF+boBqWmOl2Md5SUH8BLuurqAMCnBq8F71yjKAyBXVAIc+BhDKq+ZN2olAb9wryoOZUNHojHY+IJ4Wv99tRbhxAy2yMYeMrKkMWHeS5VSM3afgroT8JjKoUmFYX/cV5gpQgUs07DGMFJBOQlmDrAKMQm0HUaG9+Hhtbm1qVIzWolLRSQ06tEUhVaOEmSuUErVxgegzesw8u60Aqh9qiEUVImAvtZoEYiWZqJEmaGnWH0gLwMDpjXU7zuuaoSFZGnZEK76kOkgASJ1SXqMT6JM8CWv82FKoCkBCjKBVOM0ChMp5AJyWoZSHbE5BVuO0trF29gc2byzAtAN0MYlu4dXsDd67eoWp7G+VwRHAlbEsx2tzG6u0VWCgm21vYLCfA/D4UqlBxCNoRdSwf3A+QyoirqiKBSkSSN21AbER6g1+b93z4hYjYRB2xGwlxSMeIquHEfMkyk+qkKJSN1XhylIGhjMqHYFRzvCNLE0daVEzWWfBgANtqQyoBSCAywWjjPq6+dwGVEk7NzaBcW8OZH5/DeuHgWNXYEuMRo8gzuPFE1++tYWN1A1MLM6hMARw4hUk+DVcVEWO+reR7FnGiL4x+YnZVWRWRNyO8PK/ujIreHyV5phNN6PHX1miqAwCqAzLrvRxSWZd/EQEqG+tDzQ636quC9ArBRZqdIQULsQJCwgZDYrWaEx7cx3QnRzXYhlQFyJZo7bKYXujinXNX8c7/+WWsDCe4eWsVu3odHDxSYqFyGE9GOr5fYrA1odFkW8ejEfY+fxK9I0dhZvZiu6jq4U2IUjnWowOp0I9BMG60vT1gJtoZCaVBr4Erg5FT5ikiOPVcLdci+NLsVF0kAF9KWZ/XEGHWoLh7577Lnzvq2Vmjl6JUnuRbwL5bAEioy98GIe8vgNfuwo0GcMU27t9fx/nzV9FZmMbW+haGanDr5gZWiwL3NiYYCOPuN9/BqYsrOL5vDieO7EVVTFRJIO0WeM8+5EuHMByWcCiVgz5uKKk0fJGyfCzKZjzY3Fxj4qgPKDJrMHKsuoidg6QMGvemwMKxUxBUWM3IkXVAtuYQn3tRJYiIGqbhtWvLFfgUQ0kUsP5rTTPggbhjnOzLdBmYOALPLmJwPYO7/QCLu7vodzOsrQ3wte++h7npFj7yzBKe/uxh2OkW3n33Dm7c38D5n9zG9evrOHFgDww5TM91cP7CLQypg3xmL4ajCk78GBevtOHFS7RRzWsiysRGK6fjwcbmfSKfpJFIF+q1rSogEkZp0qnB/Kmj4tDWhrFjyiRFYwT1QbONRlcFiUCI1TqVyuStreXllcmwZM1aGZxKgICGwZ8sq3EQavATCqWCjdLeA7h69jXqzizp1P5F+swrH8KeXVfQ67dw7OAUMJ6ATIn8YA+PHprG4V4OcYwD+3owlrA1GOLanVWc/MwryKf6GI7HiTPjzHINqDplHzCpWbtHm1vD+6PtrbW2gYgKRERFlVQQc6vBwIjySePxWjbhrxgRcYTH9EHMhyisxKEdvZqvRBKT6XB748H4+o11HOh1aWuwqWyyMN8rUL80Kho0yWWIAqw6GTvqLe7BOrfxjW+dxsc/9LTuOjJLz7/wOEbDMRgl7tzewubaBobDEcRZ5KrozlhYIoyd4vTp8+CpBRz70M9gVExUJaxR84tR0nqwtMwhKhUopKqk35/BTy+tXHPFcCgtIlGtVMEi6kGk0fkrRGpjacPY0bupNgzYoJpaSAEa1g5x7JBkeG9zUejAolz/8Ts3ZGq2p64qNKI04CKMlSbfhyOhFrEiYM/JJ/XNi3fwF6+9ic37BZRbaqd3o8jmcOGn93D6rbvYKCwcMkzPz2BqYRY375b45mvv4vLtVTz1qU8qWh0VkYhST1SqIUm8Qw+F+WVVJ6DO7OLWzWs332GS0qn4RLOGkVrbK10uWnt6/4pTdpQuSsc12QzRLvE6Dj+UKEAFoqqqzo1ywoM3T18qJpVVOCFXVaJxCIkEI4vWkUxDz4mgGI8xv7SIj3/mE7i5fB+v/uUPlef66OyZx/SuBRw6vgcLCz3MzPWx9/A8Zmf7eLBV4KvfOIO3zt/AMx/9oO576iSNJpMQlqT+86aNhvIv9RzpUJWlkmmjEPPgzrWrFwwRxLng5Rs6VAKf1sM/8anE96KBe0kVtX6VZMSd71XVL05TH20SjPdpKuQc3JaxeuvOrVsPzl3cbB2c7/FwtA1jWwJVYiaQkgTFmtYlKBQc2IoVpK7Ax17+CA7NGvzgK6/i+3/2DTz30gva3tOng0sz6DLQn5sC2wyv/eCifu21d2k4KvCpDx3F8VMHyWS5imv41iBi0hiBhmHp0WNItKycziwdrM6d/em7w/X7N9s5kVN1EhxxNGjy9HFaBNH7q6eUxK20o0x9B78ShRrNWmta8e6LRAEWHxkRi1PFWF25zJVb+fp3Lu75+3/3Kbe2/sDkZJUIpOLpldnE+6YEtvjHgyi0LJQKGeKRp49i88YtvPrVt3H15gMcfnQ/3j13A+Oi1LnZabq1uq5vvHuLumz0M88doVOH53R4d4WqYQFuTUFkG3XURFDRoJs0iGXPrqKileaST+/afPN73/yWITesHFigLhTwkQrUiSQJFRMx0TZJGUS+rDkjuo7arol5Aq3DZ/6T6q3PJCHFRKVcbuXd82fPvbfnyp2ndvfbPS3KCWU2hyMNcZWk4hYNrp89BZFCyKqimxnV8QDHnzhE6ysDvP6Ta/jLN6/o5kRIDWN7dFWtNXh0/xQ+/eQ+HN27qIoKw+1NHS5fQHb8oxjD1wsAqiqSGhOQo6KqzKpFhao1f8D95N3rb92/ee2H3TZpKZUq+aniaCvvqPwYi2wikQejc4nFvQ1nVSf6E3oTN0eT8w5eQEg5qKioOlF5AEzesuXW63/25XdW5g8cr6SqKueqyqmoqFMVUREHlQoQUVXAiUHpFFSNdCYvtK3bVN57gNmFNj7zq8/ii7/5Ufz8Jx7BvsWedluEI3t79LlnD9HnX3xcnz6xh6rRGGwM+r0Wrb71BjYvv4vc2qR3RFzCS2BSqDgVgRTOSmduafP1b7/6pYzlnnPOiKqKCESURIU8ShWiStE5ufQ+8Kg0ONW/KLzgRMkFaebPFzipr21EVKFUPnUTKmKMtCrvtLP26TfeOKvfe+PQ8x88uX96dWW5lZu2EXEGROynikgrKCscGRSYy9Z1MX+AqWkQjba01ydwTsoZ4eCT++hXH9+ND5y9hauXH6DXsrpv1xR0XGBcFNqdbxNlrM5BO6WA7p5G1huAtAtncgj1IGRUoeDMQIpKcgMZlFLs3n+sPPPmT16/d/Pqd7rtlpZSCECB5T2URB6ewAtKIgSK0hjuica1tlNj7DdkatCXqrCRP0gDLyri8gwlpZIYA3WTlX5u3vqTf/dq98h/9yuPc2troXQja9lyKVARJ1CYthHMd8bY3dnAVO8BqBoRnI8vXDEh0+lCbRfjlU3kbcHJRxawd6qD9ZUtoHSolODEwBjSygGlI0zPtrBrfgze/hGKimA7bUwwreNsHttYwPZkRrtZG+VEKtvd57ZKe++1r/3lv+m08rVSKqOKMmaVwtQ9iUK9YX12SFJ83wwGNEVSiRK8Nevl/pFhG9wKEKxI9J2EJG9DWE2qwkJjh4qtwa3R5u0f/+H/8YP89/7+y2b54g/6ipKz3NpdU0K7e4XOdh6gkz8Aig0QKihINesRGQvTNSg21pFNAe35lmo5xmitpHJS+R8UqLFCtmuxvTUBLKE/a7Gwy6HdnqhUY9iWILNAp7oK02upOfEKSunI5bfvyZCOF7uOPD7+l3/4x3+e0ei0U4aI56Na7Xip6bQ2XDAmhTxCRC95EnzIGe3wUA8bs/5nRRUsgEDCzF5I7scctJIS06TScjjVMtevvnO286/+3WzvC3/zmSNYPW+P7IOZ7S2D3H3BZMWi2FaUDkAOqAVVDGQ58v0tnVzfoMnmPdi8DbIGRSU6GpbkqgoMJlSiohXaLaF2j9HqjNCylbqqJGJRkxFAAjYlmaxS7qxSni/SrpMnqpn+c/LH//zfvru1svzv252WG1cVVEgUMQMFirGCgEiVYrgaHVcc6iQhsaANtO5Ucz6KS0sutAYsAFgVVTU+SyqxBkC88GRfAOpIACYaV1LRXNde/v63v9+3Zpj9/j/42aN9+b7Bxm0CbRidFKLSIkLBCNMwYAeFI8qB1r625lsFRqubVG0pqmEFcpX2+hbMhHJUwliHzhS0N+PAbQFbQTV2CsM+tiGByS3YlioXvyujuUPS2fd09cd/9P9ev3H+3T9dmGvfGU8mTtRISOmJQiESok6ltKZKkjVpB1cqojJIzJkUQOTPHWDVGrAEhRUNLM5AWpAYtLTPV2ucNSmJSbUq7WIP57//7R/m/+1g3Pof/vFTe+Z7V0i3bmaqjlT6lub7qqvrpENHZq4N1RI6caA2QG2DrmWtBgVBSrQNoxgWyDqK2b2CbMr4OimpQBaQ8QScAzCqrhRiI0rsVAdjuIOvuEHvE+5f/MF/XLt89uyXdi3aM96gJK6OFJPYjw5I4jBH5FhVaF2VkiIsb8GUD1MNSeUYezSDjwBXAmDrxGzoCgEkLLr38tjXKIqPn5RYtqga6WIne+vc6XfG//Xvbz32P/7ukSOHd49mcO9aVwv4rX9aXXUbQzIEJSOMygHO+XmCKYXtkvaJUK2XaE9VlM2T8iKDDCDbCu5Mabl8n9QqyEJUKgAOTkWq7mHNHvmcnL9/rPzD/+WHV0bXL3xlYcF8czIpN5S4EB/EiNbGg8cOxSWU0dhxMUUdZeGvyKc2jJ2wXEdbO3QqRU6F9/hhSTKIARUCMwcb+3MdvAubiIKrcrIy28Lo5pVrq7/zu/dXvviFpSM//9GpAy2zNV1VG9PUMzSGODMoDc9nCiPQkfM1MTomGFYpxjQZF+geaCtNi8pwSIAoT+dQt6XULkFQdcMhOWrJqHdYssMfV7fwMfeX31+///986Y2LveGNL8/PuB+Px+WGEhUaxm3TeFBqJEs8l8ZkfYAcic9WEWIs1BzrKSBGkBApzZimUGKw7B1VXDXApBw8lV/5LRAhDTW4YfW5VgCTkI4djFPn3LQpi8n2YO2f/uGVm9/4xuyJX//1Uweffcwc7vCFmaq11hpPRtoqCwP4ylfKfO0ItgtMxhPhPgPTwsIjqBbCHavQLXLrD6jcnEgx6rpR55i6/S852f1ideGu2/zTP/nxrZX3Ln1voT3+/2xLrozKaiygwmv3kDBJaKpD0aRLvWHjFFTk2CgzUx6g4YcayPRhmIffTgTH8+jxpz9/gikuM0dcis5+Uy+/NDVs6mXIHzNgYmYiIsoNkTVMPSLbnlS0aKdmj546uXTq5c/tPvHYno09e6cH1uCGxdYaZHOb2RbE5ODurNLm7TGmD+xSnqqg5aaCiRiF6qSQSjrVcHwAw10/X23MfXT83tr0xndfvXr/1unTP+pXd97utOhyCbfu4AqAKhGtAFSqWqqi8nKeYtADVVXxri5Kqx2jWPzwD0ZKWb7G4E9ZxcS1YRVR+h5emqn1sxMh3cvhVN9RkWgTzCneTCEqIDBKR3Cqqoxy3LY8ofH66OKZ4eY7F5YHSwuLpz728f17PvzUUv/o3AN0Zu8xd7aAYgAuu9TNLZulPYqsVC2dQlskNFsW1ZIOaM/k+tr85O0r/OCNL1++vXr5vXdaxcrlBVtcEktbI6djMIl6Q4oqJOoiVQ1VtMGZvF/U1w4s2sMjOLqg9H0ze9JQATHPAsTpJPWrYFQBOvX4r50kJg3bzXFj3X9AKJgIFJDM7DdcMAGpREyWiMBMlgnWgK1lXqDMLLrKHi6RHzVZf9/8Ym9690Jnaml/i+en83y6m6HVaYMy46pKsolDORibYn3bjO/eK7dX7w9ubdzbXMb23Qsd3bzdtsWyQgbOSeGzd1wQKNhIXbBVBZ/dd97YaARTQeeHVJ8kGEbwpUnEpAwSkTY4dad8CtcSiLTeecgq/PYCIS3mSdzB789DRGH9Sp3PA3y+B8HYSg4MFlWnTCIkpaismsptM5XrHSqukQznByvUX7tFU+fOcLuSfMoXaLlcfccJUzVhdeOM3GrHuHstixv9jFeZaUNUq0nlCiU4KDkVrfy+EgQFkqavaS9sT6EJeHHGKAr6pndPQj/RYkqC1fNP0QSRp1EbNxA0iJgUCrI+oPIFqgIQiZ9mZgGE/QQZxxVcDK8S/N9QEyp+CwGCIyUmBkNppKqlIYyVZJWYu0xErYyyNpQZE0sEQ1BDfg8qIsIEhBKgbQVGDjpyzjk4VAQqFBCoikeiapARtW3iSA/Q0Th3FfJ3Kfys30d/Xa9R9VUrWk9FJ9Mm7lQ0fyyxgq8+CDlem5LL3kihCN37aniDQnkH9BUh5IszfgQVv/bSb7mhRBBVB6JSCcwqW2CoklpQ2LNN/PXhJSAVL57ZEdiByAEkBLiQLxL1riQmnPxjvp8qk2ERwtHopqVOkKS9OqIQqtVCsHpaRNkk1ehg6qGuoVOICHHsWFFwPMUXmYDAaUWFlw6CsHoepGFjQA5T7EoAi99FDQxhECRmfpnES0RlEQJ7NBL74g6hJGrC7D1BGCpeopMC5BBrZwC3o20hU+0N2ih+9t0cFgOE4VkjTREgDoTuRQpH01LVBt1GJxRtEW7bqFKPYNNUHAOrqgz4Ndwcf9kbtl6f4H86Fmn4lDcriPwaFaVQXQVo3P/FLxpTCQXh4ucI/DgRhO2Y/E49qToj0FlkND+lgDoZGd8HURnD9ZSRi8Dz7eNaH4XKJtTtaaT0k7yqc6Opxg3JUEjojJoqZPainG3Y2arCBq6O4ZPHvviZfSUoE1gJyn7dgqcI8evXlVX93gAa8Qr2qUNRICJaEux95SWFY3GxXdpWLrJVeESB3/svAII0AushmaNBt8fxo4FTG41NNoqfomdqzj01UtNpO7aI3Xgx7SCF+JXGN6RWBQYUMrVMGsgyPI/G1dW+DJmIKBo0fM8+YxiGr/plOEFEe5SSUkjKJBLyKIzFLY0FdiqIm8xG2o7U1swaRZQ2PHENtRhGakRk01pojHJq2DaZfUcnKEXXFc3b5NTGv9gnoexHVOOqM0eiFMDmH1WjsYJ3iYQZPAgzkZKq+EphMIVZBL/xCvzCK1WmFDykqewde9lSTZz1RpOxSCq2UlPVlEocz6mMy1c7J7kOJDarqSUSKaIwSJaOcGyOlViAo7FEd0cmMPZeAm98ds+p0LBChQwQas1D7Ex+Vab6TLX3OGF0+I3Tor8lEJPGbTQ9iflkvkd4COnCdxqoiBCKsJFq3eIb36roLdWvIGGE2N4biOoFZLF/Yo94k8Wd1KITCeoiFNhGutR6fj11h+cXL98pioXkVaMDrM9PD+D/WVXkAERE466Pfrh6mxiQBwaiwPUcC4iq+IXNno59dtCQ51FVARNBxa8/lgh21IYVijsKh6qa2K5oS1DacThuasYB0mF6RNlfpxpg4hV05EiKUxmhukTiun7fRgSTIbyLXR0JBYhFFWE2PgIzlpEHO6exFSxuodrx3hkNZ68KbyRF7Ry0Rg5ShVsNnERqIgA4RDqeG1MFY+Sj5LnhaSv5ntii6G2CUQ2CY/N6FfWsei2XOJTOcugrCYAPqQFysTM8K6XNVRAHS6TY2pFTGBOJEBsE0yCTJkxBsFVFiwRiZVQEUiaK1RHOL/X2Q5QpoC1s6ysSduMFwk6/cZ1YipACOsn56zR2XBjySREIEhVQRC2nFtZOIf51oQdcQKWETpXoKIIIiAsWYsdOFFoGfaJKcKpwqLetCld6W3sQeRNGBoiOtuHaNCKKUhcA1vYeeT7oEG8MUFpq5QujNRgrFEr7hweIU5LC287fmxF3/dX4WYLBY7GiC++DgaPAryfSgpHr/yoASdcovE6Vxl+HGF2lCihQUBzEXp8IQR9AJnddNVkRV24y65iYFOyVeVh7ook5Gm4vbrBYC7LIEhHfMSni7WyLgj6YdFPCe9Qp6lf6+a1dvDAgjQGyhLSzUPrFtMSNk0Os750kTaD1WLok4REbI0mDQIMvg9OGTRNVhKkjn/mpI1PPkN6vEkDEFYGV2ThrZ4tWjtsmry65cvCmTAY/tVm5wUZIVF3kW/b1tyCq5YWnQErd3NBlyVsngust/vrbPnKkgE4C0pJKTTCpvbLWWlsViJvDRqmUaJMAAhM4dIum6xs3CqMndLFvBwX2pvT7Slz73HiTOBjJqy6KGSvfBX7SMhlZiFhEGWxbwtlU2Z+evtW1+ImM736T3Pq7NsNQyAkRO//jweNT7Kwd2nRnnApqFBwTLIx2Y88TpdXU0XEyJZ/h0Z56JqzHoJA0DNWGJvA81T0qfm45PEsKR+oObNooZBZS4Mrw+7zEjmjQWuAoBYhTKBvARs6HwGFwMQkIzkuZsZPRpq4N7+4ftGZ3zy8sHWGXf2cyXv1O3uIVUacUd2+HRsSizqFotHDDyApSTk7WKshoeBgRVfZ7VHLIvFB47KBbKYazflgQIaxup2Q1v1EsQxP+KcnmmNsIyYcGfCkKEwKpKIx/0rilPYWn8D0oGv4PEkBBnBIixCTk11gY9RJRQBCFGFLYECk6GMotFUU5uVfevDk4smvp4FSvZzvFcPmreca3VR0pc2IUTRjUpiXD0Qjdms8tQBYxGvFC3TMVxSgl8ghBY/ERWIkQgqvYXnjjRw3gU9kUhmQ0AqVRQDX8G49HEcbekohZO4qGVTRO82ZVip5RwM57TV85qWoCGpR8phgacz0ixhjKjJnk95Yv57TvkZfarQUpx/f/LLO04URiROfJL0RLO7xV/fDw0jzUp5LCxhObeYWY+klYp4du5N1Bo6vQ/EFqPA4j9XAcE7W7ocaDai0SYzrAK88ka+Owo51N09pNpBODp9Pg9VLqoJ5RcgpkgKvaObL7K9fzxf3HXiGa3Ge3/TUYmShEIx5i/4c2p76PTkcb89ZWVCw1nw6JsKLJ9KFWxHsJ0u0R6SZ+SjnLhwdMYwh53Gjjl9Lhxnp6aJIvzWM7ejPkF+M9o7MmCqqzJihNoYsmXrZETi1G2b07t07s2b3/l4ut9y5njHMKYfj5L/jBFQxbe+0UMwQkAAD+f2WLeFNA6SmWAAAAAElFTkSuQmCC";
+
+const I18N = {
+  en:{
+    brand:"Yalyn Academy", tagline:"The classroom ledger — content in, AI runs the exam.",
+    uploadPdf:"Or upload a PDF", extracting:"Reading PDF…",
+    pdfHint:"If the upload doesn't work in your browser, just paste the text into the box above instead — it works exactly the same.",
+    chooseRole:"Who's signing in?", teacher:"Teacher", teacherDesc:"Manage classes, content & exams",
+    student:"Student", studentDesc:"Take exams, see grades & messages",
+    teacherSignin:"Teacher sign-in", studentSignin:"Student sign-in",
+    passcode:"Passcode", enter:"Enter", back:"Back", cancel:"Cancel", save:"Save",
+    delete:"Remove", add:"Add", selectGrade:"Select grade", grade:"Grade",
+    tabOverview:"Overview", tabClasses:"Classes", tabContent:"Content", tabBank:"Question bank", tabExams:"Exams",
+    tabAttendance:"Attendance", tabHomework:"Homework", tabMessages:"Messages", tabResults:"Analytics",
+    studentsIn:"Students in", addStudent:"Add student", studentName:"Student name",
+    theirPasscode:"Passcode", remove:"Remove", noStudents:"No students in this class yet.",
+    addContent:"Add lesson content", contentTitle:"Title", subject:"Subject",
+    contentText:"Lesson text", generateQuestions:"Generate questions with AI", generating:"Generating…",
+    questionsGenerated:"questions added to the bank.", noContent:"No lesson content yet.",
+    bankEmpty:"No questions yet — add content and generate a set.", bankFor:"Question bank —",
+    createExam:"Create an exam", examTitle:"Exam title", pickQuestions:"Pick questions",
+    assignTo:"Assign to", allStudents:"All students in class", specificStudents:"Specific students",
+    noExams:"No exams yet.", questionsCount:"questions", assignedCount:"assigned",
+    markAttendance:"Mark attendance —", present:"Present", absent:"Absent", history:"History",
+    date:"Date", rate:"Attendance rate", noAttendance:"No attendance recorded yet.",
+    homeworkSubmissions:"Submissions —", noHomework:"No homework submitted yet.",
+    submitHomework:"Submit homework", yourSubmissions:"Your submissions",
+    writeHomework:"Write your homework here…", submit:"Submit",
+    conversationWith:"Conversation with", writeMessage:"Write a message…", send:"Send",
+    teacherLabel:"Teacher", pickStudent:"Pick a student", noMessages:"No messages yet.",
+    allResults:"All results —", score:"Score", noResults:"No results yet.",
+    myExams:"My exams", startExam:"Start exam", noExamsAvailable:"No exams available right now.",
+    alreadyTaken:"Already taken", submitExam:"Submit exam", question:"Question", grading:"Grading your answers…",
+    myResults:"My results", myAttendance:"My attendance", presentRate:"Attendance rate",
+    logout:"Log out", wrongPasscode:"Incorrect passcode — try again.",
+    seedDemo:"Load sample class (Grade 10)", passed:"Passed", failed:"Needs review", outOf:"out of",
+    selectGradeFirst:"Select a grade to continue.", errorAI:"Couldn't reach the AI model. Please try again.",
+    yourResult:"Your result", correct:"Correct", modelAnswer:"Model answer", feedback:"Feedback",
+    mcq:"Multiple choice", short:"Short answer", createdOn:"Created", loading:"Loading…",
+    demoNote:"Demo teacher passcode:", teacherAcct:"Teacher",
+    deleteQ:"Remove", from:"From", noneYet:"Nothing here yet.",
+    noStorageBadge:"Temporary session", noStorageHint:"Your browser blocked local storage — data won't be saved after this tab closes.",
+    badgeShared:"● Shared (Supabase)", badgeSharedHint:"Data is synced live for every teacher and student, on any device.",
+    badgeLocal:"○ Local only", badgeLocalHint:"Data is saved only in this browser. Connect Supabase to share data across devices — see README.",
+    welcomeTeacher:"Welcome back,", welcomeTeacherSub:"Here's how your academy is performing across every grade.",
+    welcomeStudent:"Welcome back,", welcomeStudentSub:"Here's a quick look at your exams, grades and attendance.",
+    kpiStudents:"Total students", kpiExamsCreated:"Exams created", kpiAttempts:"Exams taken", kpiAvgScore:"Average score",
+    kpiPassRate:"Pass rate", quickCreateExam:"＋ Create an exam", quickAddStudent:"＋ Add a student",
+    performanceOverview:"Performance overview", perGradeAvg:"Average score by grade", recentExamsAcademy:"Recent exams — all grades",
+    excellent:"Excellent (90%+)", good:"Good (70–89%)", average:"Average (50–69%)", weak:"Needs work (<50%)",
+    noDataYet:"No exam results yet — once students take exams, performance shows up here.",
+    exam:"Exam", classLabel:"Class", attempts:"Attempts", avg:"Average", status:"Status", active:"Active",
+    gradeAnalytics:"Analytics —", thisGrade:"this class", myAverage:"My average score", pendingExams:"Pending exams",
+    examsTaken:"Exams taken", askAiTitle:"Turn any lesson into a graded exam.", askAiSub:"Upload content, let AI write the questions, assign it to your class — grading happens automatically.",
+    askAiBtn:"Go to Content →", viewAll:"View all",
+  },
+  ar:{
+    brand:"أكاديمية يالين", tagline:"سجّل المحتوى، والذكاء الاصطناعي يتولى الامتحان.",
+    uploadPdf:"أو ارفع ملف PDF", extracting:"جارِ قراءة الملف…",
+    pdfHint:"إن لم يعمل الرفع في متصفحك، الصق نص الدرس مباشرة في المربع أعلاه — النتيجة نفسها تمامًا.",
+    chooseRole:"من الذي سيدخل؟", teacher:"معلّم", teacherDesc:"إدارة الفصول والمحتوى والاختبارات",
+    student:"طالب", studentDesc:"دخول الاختبارات ومتابعة الدرجات والرسائل",
+    teacherSignin:"دخول المعلّم", studentSignin:"دخول الطالب",
+    passcode:"كلمة المرور", enter:"دخول", back:"رجوع", cancel:"إلغاء", save:"حفظ",
+    delete:"حذف", add:"إضافة", selectGrade:"اختر الصف", grade:"الصف",
+    tabOverview:"نظرة عامة", tabClasses:"الفصول", tabContent:"المحتوى", tabBank:"بنك الأسئلة", tabExams:"الاختبارات",
+    tabAttendance:"الحضور", tabHomework:"الواجبات", tabMessages:"الرسائل", tabResults:"التحليلات",
+    studentsIn:"طلاب صف", addStudent:"إضافة طالب", studentName:"اسم الطالب",
+    theirPasscode:"كلمة المرور", remove:"حذف", noStudents:"لا يوجد طلاب في هذا الصف بعد.",
+    addContent:"إضافة محتوى دراسي", contentTitle:"العنوان", subject:"المادة",
+    contentText:"نص الدرس", generateQuestions:"توليد أسئلة بالذكاء الاصطناعي", generating:"جارِ التوليد…",
+    questionsGenerated:"أسئلة أُضيفت إلى البنك.", noContent:"لا يوجد محتوى دراسي بعد.",
+    bankEmpty:"لا توجد أسئلة بعد — أضف محتوى ثم ولّد مجموعة أسئلة.", bankFor:"بنك أسئلة —",
+    createExam:"إنشاء اختبار", examTitle:"عنوان الاختبار", pickQuestions:"اختر الأسئلة",
+    assignTo:"تعيين لـ", allStudents:"جميع طلاب الصف", specificStudents:"طلاب محددون",
+    noExams:"لا توجد اختبارات بعد.", questionsCount:"سؤال", assignedCount:"معيّن لـ",
+    markAttendance:"تسجيل الحضور —", present:"حاضر", absent:"غائب", history:"السجل",
+    date:"التاريخ", rate:"نسبة الحضور", noAttendance:"لم يُسجَّل حضور بعد.",
+    homeworkSubmissions:"الواجبات المُسلَّمة —", noHomework:"لا توجد واجبات مُسلَّمة بعد.",
+    submitHomework:"تسليم واجب", yourSubmissions:"واجباتك",
+    writeHomework:"اكتب واجبك هنا…", submit:"تسليم",
+    conversationWith:"محادثة مع", writeMessage:"اكتب رسالة…", send:"إرسال",
+    teacherLabel:"المعلّم", pickStudent:"اختر طالبًا", noMessages:"لا توجد رسائل بعد.",
+    allResults:"جميع النتائج —", score:"الدرجة", noResults:"لا توجد نتائج بعد.",
+    myExams:"اختباراتي", startExam:"بدء الاختبار", noExamsAvailable:"لا توجد اختبارات متاحة الآن.",
+    alreadyTaken:"تم إجراؤه", submitExam:"تسليم الاختبار", question:"سؤال", grading:"جارِ تصحيح إجاباتك…",
+    myResults:"نتائجي", myAttendance:"حضوري", presentRate:"نسبة الحضور",
+    logout:"تسجيل الخروج", wrongPasscode:"كلمة المرور غير صحيحة — حاول مرة أخرى.",
+    seedDemo:"تحميل فصل تجريبي (الصف العاشر)", passed:"ناجح", failed:"يحتاج مراجعة", outOf:"من",
+    selectGradeFirst:"اختر الصف للمتابعة.", errorAI:"تعذّر الوصول إلى نموذج الذكاء الاصطناعي، حاول مجددًا.",
+    yourResult:"نتيجتك", correct:"صحيح", modelAnswer:"الإجابة النموذجية", feedback:"الملاحظة",
+    mcq:"اختيار من متعدد", short:"إجابة مقالية", createdOn:"أُنشئ في", loading:"جارِ التحميل…",
+    demoNote:"كلمة مرور المعلّم التجريبية:", teacherAcct:"المعلّم",
+    deleteQ:"حذف", from:"من", noneYet:"لا يوجد شيء هنا بعد.",
+    noStorageBadge:"جلسة مؤقتة", noStorageHint:"المتصفح منع التخزين المحلي — لن تُحفظ البيانات بعد إغلاق هذه الصفحة.",
+    badgeShared:"● مشترك (Supabase)", badgeSharedHint:"البيانات متزامنة فعليًا بين كل المعلمين والطلاب، من أي جهاز.",
+    badgeLocal:"○ محلي فقط", badgeLocalHint:"البيانات محفوظة في هذا المتصفح فقط. اربط Supabase لمشاركة البيانات بين الأجهزة — راجع ملف README.",
+    welcomeTeacher:"أهلًا بعودتك،", welcomeTeacherSub:"هذا أداء أكاديميتك عبر جميع الصفوف.",
+    welcomeStudent:"أهلًا بعودتك،", welcomeStudentSub:"نظرة سريعة على اختباراتك ودرجاتك وحضورك.",
+    kpiStudents:"إجمالي الطلاب", kpiExamsCreated:"اختبارات أُنشئت", kpiAttempts:"اختبارات أُجريت", kpiAvgScore:"متوسط الدرجات",
+    kpiPassRate:"نسبة النجاح", quickCreateExam:"＋ إنشاء اختبار", quickAddStudent:"＋ إضافة طالب",
+    performanceOverview:"ملخص الأداء", perGradeAvg:"متوسط الدرجات حسب الصف", recentExamsAcademy:"أحدث الاختبارات — كل الصفوف",
+    excellent:"ممتاز (90%+)", good:"جيد (70–89%)", average:"متوسط (50–69%)", weak:"يحتاج مراجعة (<50%)",
+    noDataYet:"لا توجد نتائج اختبارات بعد — بمجرد أن يبدأ الطلاب، سيظهر الأداء هنا.",
+    exam:"الاختبار", classLabel:"الصف", attempts:"عدد المحاولات", avg:"المتوسط", status:"الحالة", active:"نشط",
+    gradeAnalytics:"تحليلات —", thisGrade:"هذا الصف", myAverage:"متوسط درجاتي", pendingExams:"اختبارات لم تُجرَ بعد",
+    examsTaken:"اختبارات أُجريت", askAiTitle:"حوّل أي درس إلى اختبار مُصحَّح تلقائيًا.", askAiSub:"ارفع المحتوى، ودع الذكاء الاصطناعي يكتب الأسئلة، وعيّنها لصفك — والتصحيح يتم تلقائيًا.",
+    askAiBtn:"الذهاب إلى المحتوى ←", viewAll:"عرض الكل",
+  }
+};
+
+/* ============================ STATE ============================ */
+const state = {
+  lang:'ar', role:null, view:'home',
+  teacherOn:false, gradeId:null,
+  student:null, // {id,name,passcode,gradeId}
+  teacherTab:'overview',
+  studentTab:'overview',
+  msgGradeId:null, msgStudentId:null,
+  examInProgress:null, // exam object
+  examAnswers:{},
+  cache:{}, // loaded data for current view
+  busy:false, errorMsg:'',
+};
+function t(k){ return (I18N[state.lang][k]) || k; }
+function gradeName(g){ return state.lang==='ar' ? g.ar : g.en; }
+function findGrade(id){ return GRADES.find(g=>g.id===id); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function genPasscode(){ return String(Math.floor(100000+Math.random()*900000)); }
+function fmtDate(d){ return new Date(d).toLocaleDateString(state.lang==='ar'?'ar-EG':'en-US',{day:'2-digit',month:'short'}); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function pct(score,total){ return total? Math.round(score/total*100) : 0; }
+
+/* ============================ STORAGE HELPERS ============================ */
+// Three layers, in order of preference:
+//   1. Supabase (shared across every teacher/student, on every device) —
+//      active once SUPABASE_URL and SUPABASE_ANON_KEY below are filled in.
+//   2. localStorage — per-browser only, used automatically until Supabase
+//      is configured, or if a Supabase call fails (offline, etc).
+//   3. In-memory — last-resort fallback for this session only.
+//
+// >>> Paste your project's values here before deploying <<<
+// Find them in your Supabase project: Settings → API.
+const SUPABASE_URL = "https://mrejqlazfydrdkkjwzqw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_82LBVtARGjsiKHjjJWJecw_KqjNGp9w";
+
+const LS_PREFIX = 'yalyn:';
+const memoryStore = {};
+let hasPersistentStorage = true;
+try{
+  const testKey = '__yalyn_test__';
+  localStorage.setItem(testKey,'1'); localStorage.removeItem(testKey);
+}catch(e){ hasPersistentStorage = false; }
+
+const supabaseConfigured = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 20;
+let sb = null;
+if(supabaseConfigured && window.supabase){
+  try{
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+  }
+  catch(e){ console.warn('Supabase init failed', e); sb = null; }
+}
+const storageMode = sb ? 'shared' : (hasPersistentStorage ? 'local' : 'session');
+
+async function getData(key, def){
+  if(sb){
+    try{
+      const { data, error } = await sb.from('app_data').select('value').eq('key', key).maybeSingle();
+      if(error) throw error;
+      if(data) return data.value;
+      // not in Supabase yet — fall through to a local cache (e.g. first ever load)
+    }catch(e){ console.warn('Supabase read failed: ' + (e && (e.message || e.code || JSON.stringify(e)))); }
+  }
+  try{
+    if(!hasPersistentStorage) throw new Error('no storage');
+    const raw = localStorage.getItem(LS_PREFIX+key);
+    return raw ? JSON.parse(raw) : def;
+  }catch(e){
+    return memoryStore.hasOwnProperty(key) ? JSON.parse(JSON.stringify(memoryStore[key])) : def;
+  }
+}
+async function setData(key, val){
+  memoryStore[key] = val;
+  if(sb){
+    try{
+      const { error } = await sb.from('app_data').upsert({ key, value: val, updated_at: new Date().toISOString() });
+      if(error) throw error;
+    }catch(e){ console.warn('Supabase write failed: ' + (e && (e.message || e.code || JSON.stringify(e)))); }
+  }
+  try{
+    if(hasPersistentStorage) localStorage.setItem(LS_PREFIX+key, JSON.stringify(val));
+    return true;
+  }catch(e){ return true; }
+}
+
+/* ============================ PDF UPLOAD ============================ */
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+async function handlePdfUpload(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('pdfStatus');
+  if(statusEl) statusEl.textContent = t('extracting');
+  try{
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:buf, disableWorker:true}).promise;
+    let text = '';
+    const maxPages = Math.min(pdf.numPages, 30);
+    for(let i=1;i<=maxPages;i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it=>it.str).join(' ') + '\n';
+    }
+    text = text.trim().slice(0, 12000);
+    const textEl = document.getElementById('cText');
+    const titleEl = document.getElementById('cTitle');
+    if(textEl) textEl.value = text;
+    if(titleEl && !titleEl.value) titleEl.value = file.name.replace(/\.pdf$/i,'');
+    if(statusEl) statusEl.textContent = '';
+  }catch(e){
+    console.error(e);
+    if(statusEl) statusEl.textContent = (state.lang==='ar' ? 'تعذّرت قراءة الملف — الصق النص يدويًا في المربع أعلاه.' : "Couldn't read that PDF — please paste the text into the box above instead.");
+  }
+}
+
+/* ============================ AI CALLS ============================ */
+// Tries the app's own serverless API route first (used once this is deployed
+// on Vercel with an ANTHROPIC_API_KEY set). If that route isn't available —
+// e.g. while previewing inside Claude — it falls back to calling the model
+// directly, which Claude's own sandbox proxies automatically.
+async function callViaProxy(path, payload){
+  try{
+    const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    if(!r.ok) throw new Error('proxy route unavailable: '+r.status);
+    return await r.json();
+  }catch(e){ return null; }
+}
+async function callClaudeDirect(system, user){
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1200, system, messages:[{role:"user", content:user}] })
+  });
+  const data = await resp.json();
+  const text = (data.content||[]).map(b=>b.text||"").join("");
+  return text.replace(/```json|```/g,"").trim();
+}
+
+const QGEN_SYSTEM = (gradeLabel) => `You are an expert K-12 curriculum question-bank writer. Given lesson content for the level "${gradeLabel}", write exactly 6 exam questions calibrated to that grade's difficulty: 4 multiple-choice and 2 short-answer. Reply with ONLY a raw JSON array, no markdown fences, no commentary. Each element must be exactly:
+{"type":"mcq","question":"...","options":["...","...","...","..."],"answer":"the exact text of the correct option"}
+or
+{"type":"short","question":"...","answer":"a concise 1-2 sentence model answer used later for grading"}
+Write all question/option/answer text in the same language as the lesson content provided.`;
+
+const GRADE_SYSTEM = `You are grading short-answer exam responses for a K-12 student. For each item compare the student's answer to the model answer; be reasonably lenient about wording but require the core idea to be correct. Reply with ONLY a raw JSON array (same order, no markdown fences): [{"score":1,"feedback":"one short sentence, same language as the question"}] where score is 0 or 1.`;
+
+async function aiGenerateQuestions(contentText, gradeLabel){
+  const proxied = await callViaProxy('/api/generate-questions', {contentText, gradeLabel});
+  let arr;
+  if(proxied && proxied.questions){
+    arr = proxied.questions;
+  } else {
+    const raw = await callClaudeDirect(QGEN_SYSTEM(gradeLabel), `Lesson content:\n${contentText}`);
+    arr = JSON.parse(raw);
+  }
+  return arr.map(q=>({id:uid(), ...q}));
+}
+async function aiGradeShortAnswers(items){
+  const proxied = await callViaProxy('/api/grade-answers', {items});
+  if(proxied && proxied.results) return proxied.results;
+  const raw = await callClaudeDirect(GRADE_SYSTEM, JSON.stringify(items));
+  return JSON.parse(raw);
+}
+
+/* ============================ NAV ============================ */
+function paint(){ document.getElementById('app').innerHTML = renderView(); document.documentElement.dir = state.lang==='ar'?'rtl':'ltr'; document.documentElement.lang = state.lang; window.scrollTo(0,0); }
+function toggleLang(){ state.lang = state.lang==='ar'?'en':'ar'; paint(); }
+function goHome(){ Object.assign(state,{role:null,view:'home',teacherOn:false,student:null,errorMsg:''}); paint(); }
+function logout(){ goHome(); }
+
+/* ============================ TEACHER LOGIN ============================ */
+function showTeacherLogin(){ state.view='teacherLogin'; state.errorMsg=''; paint(); }
+function teacherLogin(){
+  const val = document.getElementById('tpass').value;
+  if(val===TEACHER_PASS){ state.teacherOn=true; state.view='teacherDash'; state.teacherTab='overview'; state.errorMsg=''; loadTeacherTab(); }
+  else { state.errorMsg = t('wrongPasscode'); paint(); }
+}
+
+/* ============================ STUDENT LOGIN ============================ */
+function showStudentLogin(){ state.view='studentLogin'; state.errorMsg=''; paint(); }
+async function studentLogin(){
+  const gsel = document.getElementById('sgrade').value;
+  const pass = document.getElementById('spass').value.trim();
+  if(!gsel){ state.errorMsg = t('selectGradeFirst'); paint(); return; }
+  const students = await getData('students:'+gsel, []);
+  const found = students.find(s=>s.passcode===pass);
+  if(found){
+    state.student = {...found, gradeId:gsel};
+    state.gradeId = gsel;
+    state.view='studentDash'; state.studentTab='overview'; state.errorMsg='';
+    await loadStudentTab();
+  } else {
+    state.errorMsg = t('wrongPasscode'); paint();
+  }
+}
+
+/* ============================ SEED DEMO ============================ */
+async function seedDemo(){
+  const g='g10';
+  let students = await getData('students:'+g, []);
+  if(students.length===0){
+    students = [
+      {id:uid(), name: state.lang==='ar'?'سارة أحمد':'Sara Ahmed', passcode:genPasscode()},
+      {id:uid(), name: state.lang==='ar'?'يوسف محمد':'Youssef Mohamed', passcode:genPasscode()},
+      {id:uid(), name: state.lang==='ar'?'ليلى حسن':'Layla Hassan', passcode:genPasscode()},
+    ];
+    await setData('students:'+g, students);
+  }
+  let content = await getData('content:'+g, []);
+  if(content.length===0){
+    content = [{
+      id:uid(), title: state.lang==='ar'?'مقدمة في الخلية':'Introduction to the Cell',
+      subject: state.lang==='ar'?'أحياء':'Biology',
+      text: state.lang==='ar'
+        ? 'الخلية هي الوحدة الأساسية للحياة. تنقسم الخلايا إلى نوعين رئيسيين: الخلايا حقيقية النواة التي تحتوي على نواة محاطة بغشاء، والخلايا بدائية النواة التي تفتقر إلى نواة محددة. تحتوي الخلية على عضيات مثل الميتوكوندريا التي تنتج الطاقة، والريبوسومات التي تصنّع البروتينات.'
+        : 'The cell is the basic unit of life. Cells are divided into two main types: eukaryotic cells, which contain a membrane-bound nucleus, and prokaryotic cells, which lack a defined nucleus. Cells contain organelles such as mitochondria, which produce energy, and ribosomes, which synthesize proteins.',
+      date: todayISO()
+    }];
+    await setData('content:'+g, content);
+  }
+  state.gradeId=g; state.teacherTab='classes'; await loadTeacherTab();
+}
+
+/* ============================ ANALYTICS ============================ */
+function bucketsFromResults(results){
+  const b = {excellent:0, good:0, average:0, weak:0};
+  results.forEach(r=>{
+    const p = pct(r.score, r.total);
+    if(p>=90) b.excellent++; else if(p>=70) b.good++; else if(p>=50) b.average++; else b.weak++;
+  });
+  return {...b, total:results.length};
+}
+function ringStyle(b){
+  if(b.total===0) return `background:conic-gradient(#ffffff1c 0 100%);`;
+  const p1 = b.excellent/b.total*100;
+  const p2 = p1 + b.good/b.total*100;
+  const p3 = p2 + b.average/b.total*100;
+  return `background:conic-gradient(var(--green) 0 ${p1}%, var(--cyan) ${p1}% ${p2}%, var(--gold) ${p2}% ${p3}%, var(--red) ${p3}% 100%);`;
+}
+function ringChart(results, avgLabel){
+  const b = bucketsFromResults(results);
+  const avg = b.total ? Math.round(results.reduce((s,r)=>s+pct(r.score,r.total),0)/b.total) : 0;
+  return `
+  <div class="ring-wrap">
+    <div class="ring" style="${ringStyle(b)}"></div>
+    <div class="ring-center"><b>${b.total? avg+'%':'—'}</b><span>${avgLabel}</span></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:var(--green)"></i>${t('excellent')} · ${b.excellent}</span>
+    <span><i style="background:var(--cyan)"></i>${t('good')} · ${b.good}</span>
+    <span><i style="background:var(--gold)"></i>${t('average')} · ${b.average}</span>
+    <span><i style="background:var(--red)"></i>${t('weak')} · ${b.weak}</span>
+  </div>`;
+}
+function barChart(items){ // items: [{label, value(0-100)}]
+  const max = Math.max(100, ...items.map(i=>i.value));
+  return `<div class="barchart-wrap"><div class="barchart">
+    ${items.map(i=>`
+      <div class="bar" style="height:${Math.max(4, i.value/max*100)}%;">
+        <span class="val">${i.value?i.value+'%':''}</span>
+        <span class="lbl">${i.label}</span>
+      </div>`).join('')}
+  </div></div>`;
+}
+async function loadAcademyAnalytics(){
+  let totalStudents=0, totalExams=0, allResults=[], allExamsFlat=[];
+  const perGrade=[];
+  for(const g of GRADES){
+    const students = await getData('students:'+g.id, []);
+    const exams = await getData('exams:'+g.id, []);
+    const results = await getData('results:'+g.id, []);
+    totalStudents += students.length;
+    totalExams += exams.length;
+    results.forEach(r=> allResults.push({...r}));
+    exams.forEach(e=> allExamsFlat.push({...e, gradeId:g.id, gradeLabel:gradeName(g)}));
+    const avg = results.length ? Math.round(results.reduce((s,r)=>s+pct(r.score,r.total),0)/results.length) : 0;
+    perGrade.push({label:gradeName(g).split(/[·—-]/)[0].trim().slice(0,10), value:avg});
+  }
+  const totalAttempts = allResults.length;
+  const avgScore = totalAttempts ? Math.round(allResults.reduce((s,r)=>s+pct(r.score,r.total),0)/totalAttempts) : 0;
+  const passCount = allResults.filter(r=> pct(r.score,r.total)>=50).length;
+  const passRate = totalAttempts ? Math.round(passCount/totalAttempts*100) : 0;
+  const recentExams = allExamsFlat.slice().sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,6).map(e=>{
+    const related = allResults.filter(r=>r.examId===e.id);
+    const avg = related.length? Math.round(related.reduce((s,r)=>s+pct(r.score,r.total),0)/related.length) : null;
+    return {...e, attempts:related.length, avg};
+  });
+  return {totalStudents, totalExams, totalAttempts, avgScore, passRate, allResults, perGrade, recentExams};
+}
+
+/* ============================ TEACHER TABS ============================ */
+async function setTeacherGrade(id){ state.gradeId=id; if(state.teacherTab==='overview') state.teacherTab='classes'; await loadTeacherTab(); }
+async function showTeacherTab(tab){ state.teacherTab=tab; await loadTeacherTab(); }
+
+async function loadTeacherTab(){
+  state.view='teacherDash';
+  const g = state.gradeId;
+  const c = state.cache = {};
+  if(state.teacherTab==='overview'){ c.academy = await loadAcademyAnalytics(); paint(); return; }
+  if(g){
+    if(state.teacherTab==='classes') c.students = await getData('students:'+g, []);
+    if(state.teacherTab==='content') c.content = await getData('content:'+g, []);
+    if(state.teacherTab==='bank') c.bank = await getData('qbank:'+g, []);
+    if(state.teacherTab==='exams'){ c.bank = await getData('qbank:'+g, []); c.exams = await getData('exams:'+g, []); c.students = await getData('students:'+g, []); }
+    if(state.teacherTab==='attendance'){ c.students = await getData('students:'+g, []); c.attendance = await getData('attendance:'+g, []); }
+    if(state.teacherTab==='homework') c.homework = await getData('homework:'+g, []);
+    if(state.teacherTab==='messages'){ c.students = await getData('students:'+g, []); if(state.msgStudentId){ c.messages = await getData('messages:'+g, []); } }
+    if(state.teacherTab==='results'){ c.results = await getData('results:'+g, []); c.students = await getData('students:'+g, []); c.exams = await getData('exams:'+g, []); }
+  }
+  paint();
+}
+
+async function addStudent(){
+  const name = document.getElementById('newStudentName').value.trim();
+  if(!name) return;
+  const g = state.gradeId;
+  const students = await getData('students:'+g, []);
+  students.push({id:uid(), name, passcode:genPasscode()});
+  await setData('students:'+g, students);
+  await loadTeacherTab();
+}
+async function removeStudent(sid){
+  const g = state.gradeId;
+  let students = await getData('students:'+g, []);
+  students = students.filter(s=>s.id!==sid);
+  await setData('students:'+g, students);
+  await loadTeacherTab();
+}
+
+async function addContent(){
+  const title = document.getElementById('cTitle').value.trim();
+  const subject = document.getElementById('cSubject').value.trim();
+  const text = document.getElementById('cText').value.trim();
+  if(!title || !text) return;
+  const g = state.gradeId;
+  const content = await getData('content:'+g, []);
+  content.unshift({id:uid(), title, subject, text, date:todayISO()});
+  await setData('content:'+g, content);
+  await loadTeacherTab();
+}
+
+async function generateFromContent(contentId){
+  state.busy = true; paint();
+  const g = state.gradeId;
+  const content = await getData('content:'+g, []);
+  const item = content.find(c=>c.id===contentId);
+  try{
+    const questions = await aiGenerateQuestions(item.text, gradeName(findGrade(g)));
+    const bank = await getData('qbank:'+g, []);
+    questions.forEach(q=> bank.unshift({...q, contentId, contentTitle:item.title}));
+    await setData('qbank:'+g, bank);
+    state.busy=false; state.teacherTab='bank';
+    await loadTeacherTab();
+  }catch(e){
+    console.error(e);
+    state.busy=false; state.errorMsg = t('errorAI'); paint();
+  }
+}
+async function deleteQuestion(qid){
+  const g=state.gradeId;
+  let bank = await getData('qbank:'+g, []);
+  bank = bank.filter(q=>q.id!==qid);
+  await setData('qbank:'+g, bank);
+  await loadTeacherTab();
+}
+
+let examDraftQ = new Set();
+let examDraftStudents = new Set();
+function toggleExamQ(qid){ examDraftQ.has(qid)?examDraftQ.delete(qid):examDraftQ.add(qid); paint(); }
+function toggleExamStudent(sid){ examDraftStudents.has(sid)?examDraftStudents.delete(sid):examDraftStudents.add(sid); paint(); }
+async function createExam(){
+  const title = document.getElementById('examTitle').value.trim();
+  const assignMode = document.querySelector('input[name="assignMode"]:checked').value;
+  if(!title || examDraftQ.size===0) return;
+  const g = state.gradeId;
+  const exams = await getData('exams:'+g, []);
+  exams.unshift({
+    id:uid(), title, gradeId:g,
+    questionIds:[...examDraftQ],
+    assignedIds: assignMode==='all' ? 'all' : [...examDraftStudents],
+    date: todayISO()
+  });
+  await setData('exams:'+g, exams);
+  examDraftQ = new Set(); examDraftStudents = new Set();
+  await loadTeacherTab();
+}
+async function deleteExam(eid){
+  const g=state.gradeId;
+  let exams = await getData('exams:'+g, []);
+  exams = exams.filter(e=>e.id!==eid);
+  await setData('exams:'+g, exams);
+  await loadTeacherTab();
+}
+
+async function markAttendance(sid, status){
+  const g = state.gradeId;
+  const date = document.getElementById('attDate') ? document.getElementById('attDate').value : todayISO();
+  let att = await getData('attendance:'+g, []);
+  att = att.filter(r=> !(r.studentId===sid && r.date===date));
+  att.push({date, studentId:sid, status});
+  await setData('attendance:'+g, att);
+  await loadTeacherTab();
+}
+
+function openMsgThread(sid){ state.msgStudentId = sid; loadTeacherTab(); }
+async function sendTeacherMessage(){
+  const text = document.getElementById('tMsgText').value.trim();
+  if(!text || !state.msgStudentId) return;
+  const g = state.gradeId;
+  const msgs = await getData('messages:'+g, []);
+  msgs.push({id:uid(), studentId:state.msgStudentId, from:'teacher', text, date:new Date().toISOString()});
+  await setData('messages:'+g, msgs);
+  await loadTeacherTab();
+}
+
+/* ============================ STUDENT TABS ============================ */
+async function showStudentTab(tab){ state.studentTab=tab; await loadStudentTab(); }
+async function loadStudentTab(){
+  state.view='studentDash';
+  const g = state.gradeId;
+  const c = state.cache = {};
+  if(state.studentTab==='overview'){ c.exams = await getData('exams:'+g, []); c.results = await getData('results:'+g, []); c.attendance = await getData('attendance:'+g, []); c.homework = await getData('homework:'+g, []); }
+  if(state.studentTab==='exams'){ c.exams = await getData('exams:'+g, []); c.results = await getData('results:'+g, []); }
+  if(state.studentTab==='results'){ c.results = await getData('results:'+g, []); }
+  if(state.studentTab==='attendance'){ c.attendance = await getData('attendance:'+g, []); }
+  if(state.studentTab==='homework'){ c.homework = await getData('homework:'+g, []); }
+  if(state.studentTab==='messages'){ c.messages = await getData('messages:'+g, []); }
+  paint();
+}
+
+async function submitHomework(){
+  const text = document.getElementById('hwText').value.trim();
+  if(!text) return;
+  const g = state.gradeId;
+  const hw = await getData('homework:'+g, []);
+  hw.unshift({id:uid(), studentId:state.student.id, studentName:state.student.name, text, date:new Date().toISOString()});
+  await setData('homework:'+g, hw);
+  await loadStudentTab();
+}
+async function sendStudentMessage(){
+  const text = document.getElementById('sMsgText').value.trim();
+  if(!text) return;
+  const g = state.gradeId;
+  const msgs = await getData('messages:'+g, []);
+  msgs.push({id:uid(), studentId:state.student.id, from:'student', text, date:new Date().toISOString()});
+  await setData('messages:'+g, msgs);
+  await loadStudentTab();
+}
+
+async function startExam(examId){
+  const g = state.gradeId;
+  const exams = await getData('exams:'+g, []);
+  const exam = exams.find(e=>e.id===examId);
+  const bank = await getData('qbank:'+g, []);
+  exam.questions = exam.questionIds.map(id=>bank.find(q=>q.id===id)).filter(Boolean);
+  state.examInProgress = exam;
+  state.examAnswers = {};
+  state.view='examTaking';
+  paint();
+}
+function setExamAnswer(qid,val){ state.examAnswers[qid]=val; }
+
+async function submitExam(){
+  state.busy = true; paint();
+  const exam = state.examInProgress;
+  const g = state.gradeId;
+  let correct = 0;
+  const details = [];
+  const shortItems = [];
+  const shortQMap = [];
+
+  exam.questions.forEach(q=>{
+    const given = state.examAnswers[q.id] || '';
+    if(q.type==='mcq'){
+      const ok = given.trim() === q.answer.trim();
+      if(ok) correct++;
+      details.push({question:q.question, type:'mcq', given, correctAns:q.answer, ok});
+    } else {
+      shortItems.push({question:q.question, modelAnswer:q.answer, studentAnswer:given});
+      shortQMap.push(q);
+    }
+  });
+
+  try{
+    let shortResults = [];
+    if(shortItems.length>0){
+      shortResults = await aiGradeShortAnswers(shortItems);
+    }
+    shortResults.forEach((r,i)=>{
+      const q = shortQMap[i];
+      if(r.score>=1) correct++;
+      details.push({question:q.question, type:'short', given: state.examAnswers[q.id]||'', modelAnswer:q.answer, ok:r.score>=1, feedback:r.feedback});
+    });
+
+    const total = exam.questions.length;
+    const results = await getData('results:'+g, []);
+    results.unshift({
+      id:uid(), examId:exam.id, examTitle:exam.title,
+      studentId:state.student.id, studentName:state.student.name,
+      score:correct, total, details, date:new Date().toISOString()
+    });
+    await setData('results:'+g, results);
+    state.busy=false;
+    state.examInProgress=null;
+    state.studentTab='results';
+    await loadStudentTab();
+  }catch(e){
+    console.error(e);
+    state.busy=false; state.errorMsg = t('errorAI'); paint();
+  }
+}
+
+/* ============================ RENDER: SHELL ============================ */
+function topbar(showBack){
+  return `
+  <div class="topbar">
+    <div class="brand" onclick="goHome()"><span class="mark">Y</span> ${t('brand')}</div>
+    <div class="topbar-right">
+      ${storageMode==='shared'?`<span class="pill" style="background:#34d39922;border-color:#34d39955;" title="${t('badgeSharedHint')}">${t('badgeShared')}</span>`
+        :storageMode==='local'?`<span class="pill" style="background:#fbbf2422;border-color:#fbbf2455;" title="${t('badgeLocalHint')}">${t('badgeLocal')}</span>`
+        :`<span class="pill" style="background:#f16a5c22;border-color:#f16a5c55;" title="${t('noStorageHint')}">${t('noStorageBadge')}</span>`}
+      ${showBack?`<button class="pill" onclick="logout()">${t('logout')}</button>`:''}
+      <button class="langbtn" onclick="toggleLang()">${state.lang==='ar'?'EN':'AR'}</button>
+    </div>
+  </div>`;
+}
+
+function renderView(){
+  switch(state.view){
+    case 'home': return viewHome();
+    case 'teacherLogin': return viewTeacherLogin();
+    case 'studentLogin': return viewStudentLogin();
+    case 'teacherDash': return viewTeacherDash();
+    case 'studentDash': return viewStudentDash();
+    case 'examTaking': return viewExamTaking();
+    default: return viewHome();
+  }
+}
+
+/* ============================ VIEW: HOME ============================ */
+function viewHome(){
+  return `
+  ${topbar(false)}
+  <div class="wrap">
+    <div class="hero">
+      <h1>${t('brand')}</h1>
+      <p>${t('tagline')}</p>
+      <div class="role-cards">
+        <div class="role-card">
+          <div class="icon">🗂️</div>
+          <h3>${t('teacher')}</h3>
+          <p>${t('teacherDesc')}</p>
+          <button class="btn" onclick="showTeacherLogin()">${t('teacherSignin')}</button>
+        </div>
+        <div class="role-card">
+          <div class="icon">🎓</div>
+          <h3>${t('student')}</h3>
+          <p>${t('studentDesc')}</p>
+          <button class="btn gold" onclick="showStudentLogin()">${t('studentSignin')}</button>
+        </div>
+      </div>
+      <div class="demo-link">
+        <button class="link-btn" onclick="seedDemo().then(()=>{state.role='teacher';state.teacherOn=true;paint();})">${t('seedDemo')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ VIEW: TEACHER LOGIN ============================ */
+function viewTeacherLogin(){
+  return `
+  ${topbar(false)}
+  <div class="wrap">
+    <div class="center-card">
+      <h2>${t('teacherSignin')}</h2>
+      <div class="field">
+        <label>${t('passcode')}</label>
+        <input id="tpass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')teacherLogin()">
+      </div>
+      <div class="hint">${t('demoNote')} <span class="mono">${TEACHER_PASS}</span></div>
+      ${state.errorMsg?`<div class="err">${state.errorMsg}</div>`:''}
+      <div style="margin-top:18px;display:flex;gap:10px;">
+        <button class="btn" onclick="teacherLogin()">${t('enter')}</button>
+        <button class="btn outline" onclick="goHome()">${t('back')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ VIEW: STUDENT LOGIN ============================ */
+function viewStudentLogin(){
+  return `
+  ${topbar(false)}
+  <div class="wrap">
+    <div class="center-card">
+      <h2>${t('studentSignin')}</h2>
+      <div class="field">
+        <label>${t('selectGrade')}</label>
+        <select id="sgrade">
+          <option value="">${t('selectGrade')}</option>
+          ${GRADES.map(g=>`<option value="${g.id}">${gradeName(g)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>${t('passcode')}</label>
+        <input id="spass" type="text" inputmode="numeric" placeholder="123456" onkeydown="if(event.key==='Enter')studentLogin()">
+      </div>
+      ${state.errorMsg?`<div class="err">${state.errorMsg}</div>`:''}
+      <div style="margin-top:18px;display:flex;gap:10px;">
+        <button class="btn gold" onclick="studentLogin()">${t('enter')}</button>
+        <button class="btn outline" onclick="goHome()">${t('back')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ VIEW: TEACHER DASHBOARD ============================ */
+function railTab(id, icon, label, active){
+  return `<button class="rail-tab ${active?'active':''}" onclick="showTeacherTab('${id}')"><span class="n">${icon}</span>${label}</button>`;
+}
+function viewTeacherDash(){
+  const g = state.gradeId;
+  const gradeSelector = `
+    <div class="card">
+      <h3>${t('selectGrade')}</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${GRADES.map(gr=>`<button class="tag-btn ${g===gr.id?'active':''}" onclick="setTeacherGrade('${gr.id}')">${gradeName(gr)}</button>`).join('')}
+      </div>
+    </div>`;
+
+  let body = '';
+  if(state.teacherTab==='overview'){
+    body = tabOverviewTeacher();
+  } else if(!g){
+    body = `<div class="card empty">${t('selectGradeFirst')}</div>`;
+  } else {
+    if(state.teacherTab==='classes') body = tabClasses();
+    else if(state.teacherTab==='content') body = tabContent();
+    else if(state.teacherTab==='bank') body = tabBank();
+    else if(state.teacherTab==='exams') body = tabExamsTeacher();
+    else if(state.teacherTab==='attendance') body = tabAttendance();
+    else if(state.teacherTab==='homework') body = tabHomeworkTeacher();
+    else if(state.teacherTab==='messages') body = tabMessagesTeacher();
+    else if(state.teacherTab==='results') body = tabResultsTeacher();
+  }
+
+  return `
+  ${topbar(true)}
+  <div class="wrap">
+    <div class="dash">
+      <div class="ledger-rail">
+        <div class="profile-mini">
+          <img src="${AVATAR_B64}" alt="">
+          <div><b>${t('teacherAcct')}</b><span>● ${state.lang==='ar'?'متصل':'Online'}</span></div>
+        </div>
+        ${railTab('overview','⌂',t('tabOverview'),state.teacherTab==='overview')}
+        ${railTab('classes','♙',t('tabClasses'),state.teacherTab==='classes')}
+        ${railTab('content','▤',t('tabContent'),state.teacherTab==='content')}
+        ${railTab('bank','▥',t('tabBank'),state.teacherTab==='bank')}
+        ${railTab('exams','✎',t('tabExams'),state.teacherTab==='exams')}
+        ${railTab('attendance','◷',t('tabAttendance'),state.teacherTab==='attendance')}
+        ${railTab('homework','▦',t('tabHomework'),state.teacherTab==='homework')}
+        ${railTab('messages','✉',t('tabMessages'),state.teacherTab==='messages')}
+        ${railTab('results','◈',t('tabResults'),state.teacherTab==='results')}
+      </div>
+      <div class="dash-main">
+        ${state.teacherTab!=='overview' ? gradeSelector : ''}
+        ${state.errorMsg?`<div class="card err">${state.errorMsg}</div>`:''}
+        ${body}
+      </div>
+    </div>
+  </div>`;
+}
+
+function tabOverviewTeacher(){
+  const a = state.cache.academy;
+  if(!a) return `<div class="card empty">${t('loading')}</div>`;
+  return `
+  <div class="hero-banner">
+    <div class="eyebrow">${t('brand')} · ${t('teacherAcct')}</div>
+    <h1>${t('welcomeTeacher')} <span>👋</span></h1>
+    <p>${t('welcomeTeacherSub')}</p>
+    <div class="hero-actions">
+      <button class="btn" onclick="showTeacherTab('exams')">${t('quickCreateExam')}</button>
+      <button class="btn outline" onclick="showTeacherTab('classes')">${t('quickAddStudent')}</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi violet"><div class="label">${t('kpiStudents')}</div><div class="value">${a.totalStudents}</div></div>
+    <div class="kpi cyan"><div class="label">${t('kpiExamsCreated')}</div><div class="value">${a.totalExams}</div></div>
+    <div class="kpi gold"><div class="label">${t('kpiAttempts')}</div><div class="value">${a.totalAttempts}</div></div>
+    <div class="kpi green"><div class="label">${t('kpiAvgScore')}</div><div class="value">${a.totalAttempts?a.avgScore+'%':'—'}</div></div>
+  </div>
+  <div class="lower-grid">
+    <div class="card">
+      <h3>${t('recentExamsAcademy')}</h3>
+      ${a.recentExams.length===0?`<div class="empty">${t('noDataYet')}</div>`:`
+      <table><thead><tr><th>${t('exam')}</th><th>${t('classLabel')}</th><th>${t('attempts')}</th><th>${t('avg')}</th><th>${t('status')}</th></tr></thead>
+      <tbody>${a.recentExams.map(e=>`
+        <tr><td>${e.title}</td><td>${e.gradeLabel}</td><td>${e.attempts}</td>
+        <td>${e.avg===null?'—':e.avg+'%'}</td><td><span class="chip green">${t('active')}</span></td></tr>
+      `).join('')}</tbody></table>`}
+    </div>
+    <div class="card" style="text-align:center;">
+      <h3 style="text-align:start;">${t('performanceOverview')}</h3>
+      ${ringChart(a.allResults, t('kpiPassRate'))}
+    </div>
+  </div>
+  <div class="card">
+    <h3>${t('perGradeAvg')}</h3>
+    ${barChart(a.perGrade)}
+  </div>
+  <div class="card ai-card">
+    <div>
+      <div class="eyebrow" style="color:#c4b5fd;font-size:11px;letter-spacing:2px;text-transform:uppercase;">${t('brand')} AI</div>
+      <h3 style="margin:7px 0;color:#fff;">${t('askAiTitle')}</h3>
+      <p class="hint" style="max-width:480px;">${t('askAiSub')}</p>
+      <button class="btn" style="margin-top:6px;" onclick="showTeacherTab('content')">${t('askAiBtn')}</button>
+    </div>
+    <div class="robot">🤖</div>
+  </div>`;
+}
+
+function tabClasses(){
+  const students = state.cache.students||[];
+  return `
+  <div class="card">
+    <h3>${t('studentsIn')} ${gradeName(findGrade(state.gradeId))}</h3>
+    <div class="row" style="margin-bottom:14px;">
+      <div class="field"><label>${t('studentName')}</label><input id="newStudentName" onkeydown="if(event.key==='Enter')addStudent()"></div>
+      <button class="btn" onclick="addStudent()">${t('add')}</button>
+    </div>
+    ${students.length===0?`<div class="empty">${t('noStudents')}</div>`: `
+    <table>
+      <thead><tr><th>${t('studentName')}</th><th>${t('theirPasscode')}</th><th></th></tr></thead>
+      <tbody>
+      ${students.map(s=>`
+        <tr>
+          <td>${s.name}</td>
+          <td class="mono">${s.passcode}</td>
+          <td><button class="btn small danger" onclick="removeStudent('${s.id}')">${t('remove')}</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`}
+  </div>`;
+}
+
+function tabContent(){
+  const content = state.cache.content||[];
+  return `
+  <div class="card">
+    <h3>${t('addContent')}</h3>
+    <div class="field"><label>${t('contentTitle')}</label><input id="cTitle"></div>
+    <div class="field"><label>${t('subject')}</label><input id="cSubject"></div>
+    <div class="field"><label>${t('contentText')}</label><textarea id="cText"></textarea></div>
+    <div class="field">
+      <label>${t('uploadPdf')}</label>
+      <input id="cPdf" type="file" accept="application/pdf" onchange="handlePdfUpload(event)">
+      <div class="hint">${t('pdfHint')}</div>
+      <div id="pdfStatus" class="hint"></div>
+    </div>
+    <button class="btn" onclick="addContent()">${t('add')}</button>
+  </div>
+  <div class="card">
+    <h3>${t('tabContent')}</h3>
+    ${content.length===0?`<div class="empty">${t('noContent')}</div>`: content.map(c=>`
+      <div class="list-item">
+        <div>
+          <strong>${c.title}</strong>
+          <div class="meta">${c.subject||''} · ${fmtDate(c.date)}</div>
+        </div>
+        <button class="btn small gold" ${state.busy?'disabled':''} onclick="generateFromContent('${c.id}')">
+          ${state.busy?`<span class="spinner"></span>${t('generating')}`:t('generateQuestions')}
+        </button>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function tabBank(){
+  const bank = state.cache.bank||[];
+  return `
+  <div class="card">
+    <h3>${t('bankFor')} ${gradeName(findGrade(state.gradeId))}</h3>
+    ${bank.length===0?`<div class="empty">${t('bankEmpty')}</div>`: bank.map(q=>`
+      <div class="qcard">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">
+          <div>
+            <div class="qtype">${q.type==='mcq'?t('mcq'):t('short')} · ${q.contentTitle||''}</div>
+            <div style="margin-top:4px;font-weight:600;">${q.question}</div>
+          </div>
+          <button class="btn small danger" onclick="deleteQuestion('${q.id}')">${t('deleteQ')}</button>
+        </div>
+        ${q.type==='mcq'?`<ul class="opts">${q.options.map(o=>`<li>${o===q.answer?'✅ ':''}${o}</li>`).join('')}</ul>`
+        : `<div class="meta" style="margin-top:6px;"><em>${t('modelAnswer')}:</em> ${q.answer}</div>`}
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function tabExamsTeacher(){
+  const bank = state.cache.bank||[];
+  const exams = state.cache.exams||[];
+  const students = state.cache.students||[];
+  return `
+  <div class="card">
+    <h3>${t('createExam')}</h3>
+    <div class="field"><label>${t('examTitle')}</label><input id="examTitle"></div>
+    <div class="field">
+      <label>${t('pickQuestions')}</label>
+      ${bank.length===0?`<div class="empty">${t('bankEmpty')}</div>`:bank.map(q=>`
+        <div class="check-row">
+          <input type="checkbox" id="eq_${q.id}" ${examDraftQ.has(q.id)?'checked':''} onchange="toggleExamQ('${q.id}')">
+          <label for="eq_${q.id}">${q.question}</label>
+        </div>`).join('')}
+    </div>
+    <div class="field">
+      <label>${t('assignTo')}</label>
+      <div class="check-row"><input type="radio" name="assignMode" value="all" id="am_all" checked onchange="paint()"><label for="am_all">${t('allStudents')}</label></div>
+      <div class="check-row"><input type="radio" name="assignMode" value="pick" id="am_pick" onchange="paint()"><label for="am_pick">${t('specificStudents')}</label></div>
+      ${document.getElementById('am_pick') && document.getElementById('am_pick').checked ? students.map(s=>`
+        <div class="check-row" style="padding-inline-start:20px;">
+          <input type="checkbox" id="es_${s.id}" ${examDraftStudents.has(s.id)?'checked':''} onchange="toggleExamStudent('${s.id}')">
+          <label for="es_${s.id}">${s.name}</label>
+        </div>`).join('') : ''}
+    </div>
+    <button class="btn" onclick="createExam()">${t('save')}</button>
+  </div>
+  <div class="card">
+    <h3>${t('tabExams')}</h3>
+    ${exams.length===0?`<div class="empty">${t('noExams')}</div>`:exams.map(e=>`
+      <div class="list-item">
+        <div>
+          <strong>${e.title}</strong>
+          <div class="meta">${e.questionIds.length} ${t('questionsCount')} · ${e.assignedIds==='all'?t('allStudents'):(e.assignedIds.length+' '+t('assignedCount'))} · ${fmtDate(e.date)}</div>
+        </div>
+        <button class="btn small danger" onclick="deleteExam('${e.id}')">${t('delete')}</button>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function tabAttendance(){
+  const students = state.cache.students||[];
+  const attendance = state.cache.attendance||[];
+  const date = todayISO();
+  const todays = {};
+  attendance.filter(a=>a.date===date).forEach(a=> todays[a.studentId]=a.status);
+  return `
+  <div class="card">
+    <h3>${t('markAttendance')} ${gradeName(findGrade(state.gradeId))}</h3>
+    <div class="field" style="max-width:220px;"><label>${t('date')}</label><input id="attDate" type="date" value="${date}"></div>
+    ${students.length===0?`<div class="empty">${t('noStudents')}</div>`:students.map(s=>`
+      <div class="list-item">
+        <div>${s.name}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn small ${todays[s.id]==='present'?'':'outline'}" style="${todays[s.id]==='present'?'background:linear-gradient(135deg,var(--green),#1f9c6f);box-shadow:none;':''}" onclick="markAttendance('${s.id}','present')">${t('present')}</button>
+          <button class="btn small ${todays[s.id]==='absent'?'danger':'outline'}" onclick="markAttendance('${s.id}','absent')">${t('absent')}</button>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  <div class="card">
+    <h3>${t('history')}</h3>
+    ${attendance.length===0?`<div class="empty">${t('noAttendance')}</div>`:`
+    <table><thead><tr><th>${t('date')}</th><th>${t('studentName')}</th><th></th></tr></thead>
+    <tbody>${attendance.slice().reverse().slice(0,40).map(a=>{
+      const s = students.find(x=>x.id===a.studentId);
+      return `<tr><td>${fmtDate(a.date)}</td><td>${s?s.name:'—'}</td><td><span class="chip ${a.status==='present'?'green':'red'}">${a.status==='present'?t('present'):t('absent')}</span></td></tr>`;
+    }).join('')}</tbody></table>`}
+  </div>`;
+}
+
+function tabHomeworkTeacher(){
+  const hw = state.cache.homework||[];
+  return `
+  <div class="card">
+    <h3>${t('homeworkSubmissions')} ${gradeName(findGrade(state.gradeId))}</h3>
+    ${hw.length===0?`<div class="empty">${t('noHomework')}</div>`:hw.map(h=>`
+      <div class="list-item" style="align-items:start;">
+        <div>
+          <strong>${h.studentName}</strong>
+          <div class="meta">${fmtDate(h.date)}</div>
+          <div style="margin-top:6px;">${h.text}</div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function tabMessagesTeacher(){
+  const students = state.cache.students||[];
+  const msgs = (state.cache.messages||[]).filter(m=>m.studentId===state.msgStudentId);
+  const activeStudent = students.find(s=>s.id===state.msgStudentId);
+  return `
+  <div class="card">
+    <h3>${t('tabMessages')}</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      ${students.map(s=>`<button class="tag-btn ${state.msgStudentId===s.id?'active':''}" onclick="openMsgThread('${s.id}')">${s.name}</button>`).join('') || `<div class="empty">${t('noStudents')}</div>`}
+    </div>
+    ${activeStudent ? `
+      <h3 style="font-size:15px;">${t('conversationWith')} ${activeStudent.name}</h3>
+      <div style="max-height:320px;overflow:auto;padding:6px 2px;">
+        ${msgs.length===0?`<div class="empty">${t('noMessages')}</div>`:msgs.map(m=>`
+          <div class="msg ${m.from==='teacher'?'mine':'theirs'}">${m.text}<div class="when">${new Date(m.date).toLocaleString(state.lang==='ar'?'ar-EG':'en-US')}</div></div>
+        `).join('')}
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="field"><input id="tMsgText" placeholder="${t('writeMessage')}" onkeydown="if(event.key==='Enter')sendTeacherMessage()"></div>
+        <button class="btn" onclick="sendTeacherMessage()">${t('send')}</button>
+      </div>
+    ` : ''}
+  </div>`;
+}
+
+function tabResultsTeacher(){
+  const results = state.cache.results||[];
+  const students = state.cache.students||[];
+  const exams = state.cache.exams||[];
+  const perExam = exams.map(e=>{
+    const related = results.filter(r=>r.examId===e.id);
+    const avg = related.length? Math.round(related.reduce((s,r)=>s+pct(r.score,r.total),0)/related.length) : 0;
+    return {label:e.title.slice(0,10), value:avg};
+  });
+  const avgScore = results.length ? Math.round(results.reduce((s,r)=>s+pct(r.score,r.total),0)/results.length) : 0;
+  const passRate = results.length ? Math.round(results.filter(r=>pct(r.score,r.total)>=50).length/results.length*100) : 0;
+  return `
+  <div class="kpi-grid">
+    <div class="kpi violet"><div class="label">${t('kpiStudents')}</div><div class="value">${students.length}</div></div>
+    <div class="kpi cyan"><div class="label">${t('kpiExamsCreated')}</div><div class="value">${exams.length}</div></div>
+    <div class="kpi gold"><div class="label">${t('kpiAttempts')}</div><div class="value">${results.length}</div></div>
+    <div class="kpi green"><div class="label">${t('kpiAvgScore')}</div><div class="value">${results.length?avgScore+'%':'—'}</div></div>
+  </div>
+  <div class="lower-grid">
+    <div class="card">
+      <h3>${t('allResults')} ${gradeName(findGrade(state.gradeId))}</h3>
+      ${results.length===0?`<div class="empty">${t('noResults')}</div>`:`
+      <table><thead><tr><th>${t('studentName')}</th><th>${t('tabExams')}</th><th>${t('score')}</th><th>${t('date')}</th></tr></thead>
+      <tbody>${results.map(r=>`
+        <tr><td>${r.studentName}</td><td>${r.examTitle}</td>
+        <td><span class="chip ${pct(r.score,r.total)>=50?'green':'red'}">${r.score} / ${r.total}</span></td>
+        <td>${fmtDate(r.date)}</td></tr>
+      `).join('')}</tbody></table>`}
+    </div>
+    <div class="card" style="text-align:center;">
+      <h3 style="text-align:start;">${t('gradeAnalytics')} ${t('thisGrade')}</h3>
+      ${ringChart(results, state.lang==='ar'?'المتوسط':'Average')}
+    </div>
+  </div>
+  ${exams.length>0?`<div class="card"><h3>${t('perGradeAvg').replace(t('perGradeAvg').split(' ').pop(),'')}${t('exam')}</h3>${barChart(perExam)}</div>`:''}
+  `;
+}
+
+/* ============================ VIEW: STUDENT DASHBOARD ============================ */
+function viewStudentDash(){
+  const g = state.gradeId;
+  let body = '';
+  if(state.studentTab==='overview') body = tabOverviewStudent();
+  else if(state.studentTab==='exams') body = tabExamsStudent();
+  else if(state.studentTab==='results') body = tabResultsStudent();
+  else if(state.studentTab==='attendance') body = tabAttendanceStudent();
+  else if(state.studentTab==='homework') body = tabHomeworkStudent();
+  else if(state.studentTab==='messages') body = tabMessagesStudent();
+
+  return `
+  ${topbar(true)}
+  <div class="wrap">
+    <div class="dash">
+      <div class="ledger-rail">
+        <div class="profile-mini">
+          <div class="avatar-fallback">${(state.student.name||'?').trim().charAt(0)}</div>
+          <div><b>${state.student.name}</b><span>${gradeName(findGrade(g))}</span></div>
+        </div>
+        ${railTabS('overview','⌂',t('tabOverview'))}
+        ${railTabS('exams','✎',t('myExams'))}
+        ${railTabS('results','◈',t('myResults'))}
+        ${railTabS('attendance','◷',t('myAttendance'))}
+        ${railTabS('homework','▦',t('tabHomework'))}
+        ${railTabS('messages','✉',t('tabMessages'))}
+      </div>
+      <div class="dash-main">
+        ${state.errorMsg?`<div class="card err">${state.errorMsg}</div>`:''}
+        ${body}
+      </div>
+    </div>
+  </div>`;
+}
+function railTabS(id,icon,label){
+  return `<button class="rail-tab ${state.studentTab===id?'active':''}" onclick="showStudentTab('${id}')"><span class="n">${icon}</span>${label}</button>`;
+}
+
+function tabOverviewStudent(){
+  const exams = (state.cache.exams||[]).filter(e=> e.assignedIds==='all' || e.assignedIds.includes(state.student.id));
+  const results = (state.cache.results||[]).filter(r=>r.studentId===state.student.id);
+  const attendance = (state.cache.attendance||[]).filter(a=>a.studentId===state.student.id);
+  const hw = (state.cache.homework||[]).filter(h=>h.studentId===state.student.id);
+  const pending = exams.filter(e=> !results.find(r=>r.examId===e.id)).length;
+  const attRate = attendance.length ? Math.round(attendance.filter(a=>a.status==='present').length/attendance.length*100) : 0;
+  return `
+  <div class="hero-banner">
+    <div class="eyebrow">${gradeName(findGrade(state.gradeId))}</div>
+    <h1>${t('welcomeStudent')} ${state.student.name} <span>👋</span></h1>
+    <p>${t('welcomeStudentSub')}</p>
+    <div class="hero-actions">
+      <button class="btn" onclick="showStudentTab('exams')">${t('myExams')} →</button>
+      <button class="btn outline" onclick="showStudentTab('messages')">${t('tabMessages')}</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi violet"><div class="label">${t('examsTaken')}</div><div class="value">${results.length}</div></div>
+    <div class="kpi gold"><div class="label">${t('pendingExams')}</div><div class="value">${pending}</div></div>
+    <div class="kpi cyan"><div class="label">${t('presentRate')}</div><div class="value">${attendance.length?attRate+'%':'—'}</div></div>
+    <div class="kpi green"><div class="label">${t('myAverage')}</div><div class="value">${results.length?Math.round(results.reduce((s,r)=>s+pct(r.score,r.total),0)/results.length)+'%':'—'}</div></div>
+  </div>
+  <div class="lower-grid">
+    <div class="card">
+      <h3>${t('myResults')}</h3>
+      ${results.length===0?`<div class="empty">${t('noResults')}</div>`:results.slice(0,5).map(r=>`
+        <div class="list-item">
+          <div><strong>${r.examTitle}</strong><div class="meta">${fmtDate(r.date)}</div></div>
+          <span class="chip ${pct(r.score,r.total)>=50?'green':'red'}">${r.score}/${r.total}</span>
+        </div>`).join('')}
+    </div>
+    <div class="card" style="text-align:center;">
+      <h3 style="text-align:start;">${t('performanceOverview')}</h3>
+      ${ringChart(results, t('myAverage'))}
+    </div>
+  </div>`;
+}
+
+function tabExamsStudent(){
+  const exams = (state.cache.exams||[]).filter(e=> e.assignedIds==='all' || e.assignedIds.includes(state.student.id));
+  const results = state.cache.results||[];
+  return `
+  <div class="card">
+    <h3>${t('myExams')}</h3>
+    ${exams.length===0?`<div class="empty">${t('noExamsAvailable')}</div>`: exams.map(e=>{
+      const taken = results.find(r=>r.examId===e.id && r.studentId===state.student.id);
+      return `
+      <div class="list-item">
+        <div>
+          <strong>${e.title}</strong>
+          <div class="meta">${e.questionIds.length} ${t('questionsCount')}</div>
+        </div>
+        ${taken ? `<span class="chip gold">${t('alreadyTaken')} · ${taken.score}/${taken.total}</span>`
+        : `<button class="btn gold small" onclick="startExam('${e.id}')">${t('startExam')}</button>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function tabResultsStudent(){
+  const results = (state.cache.results||[]).filter(r=>r.studentId===state.student.id);
+  return `
+  <div class="card">
+    <h3>${t('myResults')}</h3>
+    ${results.length===0?`<div class="empty">${t('noResults')}</div>`:results.map(r=>`
+      <div class="list-item" style="flex-direction:column;align-items:stretch;">
+        <div style="display:flex;justify-content:space-between;">
+          <strong>${r.examTitle}</strong>
+          <span class="chip ${pct(r.score,r.total)>=50?'green':'red'}">${r.score} / ${r.total}</span>
+        </div>
+        <div class="meta">${fmtDate(r.date)}</div>
+        <details style="margin-top:8px;">
+          <summary style="cursor:pointer;font-size:13px;color:var(--cyan);">${t('feedback')}</summary>
+          ${r.details.map(d=>`
+            <div class="qcard" style="margin-top:8px;">
+              <div style="font-weight:600;">${d.question}</div>
+              <div class="meta">${t('correct')}: ${d.ok?'✅':'❌'} ${d.feedback?(' · '+d.feedback):''}</div>
+              ${d.type==='short'?`<div class="meta"><em>${t('modelAnswer')}:</em> ${d.modelAnswer}</div>`:''}
+            </div>
+          `).join('')}
+        </details>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function tabAttendanceStudent(){
+  const att = (state.cache.attendance||[]).filter(a=>a.studentId===state.student.id);
+  const presentCount = att.filter(a=>a.status==='present').length;
+  const rate = att.length ? Math.round(presentCount/att.length*100) : 0;
+  return `
+  <div class="card">
+    <h3>${t('myAttendance')}</h3>
+    <div class="meta" style="margin-bottom:10px;">${t('rate')}: <strong>${rate}%</strong></div>
+    ${att.length===0?`<div class="empty">${t('noAttendance')}</div>`:`
+    <table><thead><tr><th>${t('date')}</th><th></th></tr></thead>
+    <tbody>${att.slice().reverse().map(a=>`<tr><td>${fmtDate(a.date)}</td><td><span class="chip ${a.status==='present'?'green':'red'}">${a.status==='present'?t('present'):t('absent')}</span></td></tr>`).join('')}</tbody></table>`}
+  </div>`;
+}
+
+function tabHomeworkStudent(){
+  const hw = (state.cache.homework||[]).filter(h=>h.studentId===state.student.id);
+  return `
+  <div class="card">
+    <h3>${t('submitHomework')}</h3>
+    <div class="field"><textarea id="hwText" placeholder="${t('writeHomework')}"></textarea></div>
+    <button class="btn" onclick="submitHomework()">${t('submit')}</button>
+  </div>
+  <div class="card">
+    <h3>${t('yourSubmissions')}</h3>
+    ${hw.length===0?`<div class="empty">${t('noneYet')}</div>`:hw.map(h=>`
+      <div class="list-item"><div><div>${h.text}</div><div class="meta">${fmtDate(h.date)}</div></div></div>
+    `).join('')}
+  </div>`;
+}
+
+function tabMessagesStudent(){
+  const msgs = (state.cache.messages||[]).filter(m=>m.studentId===state.student.id);
+  return `
+  <div class="card">
+    <h3>${t('conversationWith')} ${t('teacherLabel')}</h3>
+    <div style="max-height:340px;overflow:auto;padding:6px 2px;">
+      ${msgs.length===0?`<div class="empty">${t('noMessages')}</div>`:msgs.map(m=>`
+        <div class="msg ${m.from==='student'?'mine':'theirs'}">${m.text}<div class="when">${new Date(m.date).toLocaleString(state.lang==='ar'?'ar-EG':'en-US')}</div></div>
+      `).join('')}
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div class="field"><input id="sMsgText" placeholder="${t('writeMessage')}" onkeydown="if(event.key==='Enter')sendStudentMessage()"></div>
+      <button class="btn gold" onclick="sendStudentMessage()">${t('send')}</button>
+    </div>
+  </div>`;
+}
+
+/* ============================ VIEW: EXAM TAKING ============================ */
+function viewExamTaking(){
+  const exam = state.examInProgress;
+  return `
+  ${topbar(true)}
+  <div class="wrap">
+    <div class="card">
+      <h3>${exam.title}</h3>
+      ${exam.questions.map((q,i)=>`
+        <div class="exam-q">
+          <div class="qn">${t('question')} ${i+1}. ${q.question}</div>
+          ${q.type==='mcq' ? q.options.map(o=>`
+            <label class="opt">
+              <input type="radio" name="q_${q.id}" value="${o.replace(/"/g,'&quot;')}" onchange="setExamAnswer('${q.id}', this.value)">
+              ${o}
+            </label>`).join('')
+          : `<textarea onInput="setExamAnswer('${q.id}', this.value)" placeholder="…"></textarea>`}
+        </div>
+      `).join('')}
+      ${state.errorMsg?`<div class="err">${state.errorMsg}</div>`:''}
+      <button class="btn gold" ${state.busy?'disabled':''} onclick="submitExam()">
+        ${state.busy?`<span class="spinner"></span>${t('grading')}`:t('submitExam')}
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ============================ INIT ============================ */
+paint();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "yalyn-academy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Yalyn Academy — AI-powered attendance, exams and grading platform.",
+  "engines": {
+    "node": ">=18"
+  }
+}
